@@ -25,6 +25,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/utils/ParseUtils.h"
 #include "minisat/utils/Options.h"
 #include "minisat/core/Dimacs.h"
+#include "minisat/core/Symm.h"
 #include "minisat/simp/SimpSolver.h"
 
 using namespace Minisat;
@@ -77,8 +78,6 @@ int main(int argc, char** argv)
 
         if (!pre) S.eliminate(true);
 
-        if (symmetry != NULL) S.set_symmetry(symmetry);
-
         S.verbosity = verb;
         
         solver = &S;
@@ -104,6 +103,12 @@ int main(int argc, char** argv)
         parse_DIMACS(in, S, (bool)strictp);
         gzclose(in);
         FILE* res = (argc >= 3) ? fopen(argv[2], "wb") : NULL;
+
+        // Parse the symetries
+        if (symmetry != NULL) {
+          gzFile symm_in = gzopen(symmetry, "rb");
+          parse_SYMM(symm_in, S);
+        }
 
         if (S.verbosity > 0){
             printf("|  Number of variables:  %12d                                         |\n", S.nVars());

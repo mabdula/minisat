@@ -67,12 +67,17 @@ int main(int argc, char** argv)
         IntOption    mem_lim("MAIN", "mem-lim","Limit on memory usage in megabytes.\n", 0, IntRange(0, INT32_MAX));
         BoolOption   strictp("MAIN", "strict", "Validate DIMACS header during parsing.", false);
 
+        // Symmetry options:
+        StringOption symmetry("SYMMETRY BREAKING", "symm", "Symmetry definitions.");
+
         parseOptions(argc, argv, true);
         
         SimpSolver  S;
         double      initial_time = cpuTime();
 
         if (!pre) S.eliminate(true);
+
+        if (symmetry != NULL) S.set_symmetry(symmetry);
 
         S.verbosity = verb;
         

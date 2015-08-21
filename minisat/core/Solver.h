@@ -69,6 +69,9 @@ public:
 
     bool    implies      (const vec<Lit>& assumps, vec<Lit>& out);
 
+    // Symmetry breaking
+    void    set_symmetry(const char* symmetry_file);
+
     // Iterate over clauses and top-level assignments:
     ClauseIterator clausesBegin() const;
     ClauseIterator clausesEnd()   const;
@@ -280,6 +283,12 @@ protected:
     double   progressEstimate ()      const; // DELETE THIS ?? IT'S NOT VERY USEFUL ...
     bool     withinBudget     ()      const;
     void     relocAll         (ClauseAllocator& to);
+
+
+    // Symmetry stuff:
+    //
+    const char* symmetry_definition_file;    // File with definition of the symmetry
+
 
     // Static helpers:
     //

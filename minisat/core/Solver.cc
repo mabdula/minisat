@@ -101,6 +101,9 @@ Solver::Solver() :
   , conflict_budget    (-1)
   , propagation_budget (-1)
   , asynch_interrupt   (false)
+
+    // Symmetry stuff
+  , symmetry_definition_file(NULL)
 {}
 
 
@@ -1063,4 +1066,8 @@ void Solver::garbageCollect()
         printf("|  Garbage collection:   %12d bytes => %12d bytes             |\n", 
                ca.size()*ClauseAllocator::Unit_Size, to.size()*ClauseAllocator::Unit_Size);
     to.moveTo(ca);
+}
+
+void Solver::set_symmetry(const char* symmetry_file) {
+  symmetry_definition_file = symmetry_file;
 }

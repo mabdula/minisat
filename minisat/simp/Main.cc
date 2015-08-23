@@ -104,12 +104,6 @@ int main(int argc, char** argv)
         gzclose(in);
         FILE* res = (argc >= 3) ? fopen(argv[2], "wb") : NULL;
 
-        // Parse the symetries
-        if (symmetry != NULL) {
-          gzFile symm_in = gzopen(symmetry, "rb");
-          parse_SYMM(symm_in, S);
-        }
-
         if (S.verbosity > 0){
             printf("|  Number of variables:  %12d                                         |\n", S.nVars());
             printf("|  Number of clauses:    %12d                                         |\n", S.nClauses()); }
@@ -118,6 +112,17 @@ int main(int argc, char** argv)
         if (S.verbosity > 0)
             printf("|  Parse time:           %12.2f s                                       |\n", parsed_time - initial_time);
 
+        // Parse the symetries
+        double symmetry_parsed_time = cpuTime();
+        if (symmetry != NULL) {
+          gzFile symm_in = gzopen(symmetry, "rb");
+          parse_SYMM(symm_in, S);
+          gzclose(symm_in);
+
+          if (S.verbosity > 0)
+            printf("|  Symmetry parse time:  %12.2f s                                       |\n", symmetry_parsed_time - parsed_time);
+        }
+
         // Change to signal-handlers that will only notify the solver and allow it to terminate
         // voluntarily:
         sigTerm(SIGINT_interrupt);
@@ -125,7 +130,7 @@ int main(int argc, char** argv)
         S.eliminate(true);
         double simplified_time = cpuTime();
         if (S.verbosity > 0){
-            printf("|  Simplification time:  %12.2f s                                       |\n", simplified_time - parsed_time);
+            printf("|  Simplification time:  %12.2f s                                       |\n", simplified_time - symmetry_parsed_time);
             printf("|                                                                             |\n"); }
 
         if (!S.okay()){

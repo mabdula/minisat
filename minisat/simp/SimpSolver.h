@@ -50,6 +50,10 @@ class SimpSolver : public Solver {
     bool    addClause_(      vec<Lit>& ps);
     bool    substitute(Var v, Lit x);  // Replace all occurences of v with x (may cause a contradiction).
 
+    // Symmetry specification
+    //
+    void    addSymmetryGenerator(const vec<vec<Lit> >& generator);
+
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

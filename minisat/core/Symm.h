@@ -31,44 +31,43 @@ namespace Minisat {
 //=================================================================================================
 // SYMMETRY Parser:
 
-template<class B, class Solver>
-static void readCycle(B& in, Solver& S, vec<Lit>& lits) {
+template<class B>
+static void readCycle(B& in, vec<Lit>& cycle) {
     int     parsed_lit, var;
-    lits.clear();
+    cycle.clear();
     for (;;){
         parsed_lit = parseInt(in);
         if (parsed_lit == 0) break;
         var = abs(parsed_lit)-1;
-        while (var >= S.nVars()) S.newVar();
-        lits.push( (parsed_lit > 0) ? mkLit(var) : ~mkLit(var) );
+        cycle.push( (parsed_lit > 0) ? mkLit(var) : ~mkLit(var) );
+    }
+}
+
+template<class B>
+static void readGenerator(B& in, vec< vec<Lit> >& generator) {
+    for (;;){
+      generator.push();
+      readCycle(in, generator.last());
+      if (generator.last().size() == 0) {
+        generator.pop();
+        break;
+      }
     }
 }
 
 template<class B, class Solver>
 static void parse_SYMM_main(B& in, Solver& S) {
-    vec<Lit> lits;
-    int vars    = 0;
-    int clauses = 0;
+    vec< vec<Lit> > generator;
     int cnt     = 0;
     for (;;){
         skipWhitespace(in);
         if (*in == EOF) break;
-        else if (*in == 'p'){
-            if (eagerMatch(in, "p cnf")){
-                vars    = parseInt(in);
-                clauses = parseInt(in);
-                // SATRACE'06 hack
-                // if (clauses > 4000000)
-                //     S.eliminate(true);
-            }else{
-                printf("PARSE ERROR! Unexpected char: %c\n", *in), exit(3);
-            }
-        } else if (*in == 'c' || *in == 'p')
+        else if (*in == 'c'){
             skipLine(in);
-        else{
+        } else{
             cnt++;
-            readCycle(in, S, lits);
-            S.addClause_(lits); }
+            readGenerator(in, generator);
+            S.addSymmetryGenerator(generator); }
     }
 }
 

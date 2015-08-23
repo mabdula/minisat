@@ -1064,3 +1064,7 @@ void Solver::garbageCollect()
                ca.size()*ClauseAllocator::Unit_Size, to.size()*ClauseAllocator::Unit_Size);
     to.moveTo(ca);
 }
+
+void Solver::addSymmetryGenerator(const vec<vec<Lit> >& generator) {
+  // TODO: Add the generator
+}

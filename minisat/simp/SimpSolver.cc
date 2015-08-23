@@ -723,3 +723,17 @@ void SimpSolver::garbageCollect()
                ca.size()*ClauseAllocator::Unit_Size, to.size()*ClauseAllocator::Unit_Size);
     to.moveTo(ca);
 }
+
+void SimpSolver::addSymmetryGenerator(const vec<vec<Lit> >& generator) {
+
+  // Mark all the symmetry variables as frozen
+  for (int i = 0; i < generator.size(); ++ i){
+    const vec<Lit>& cycle = generator[i];
+    for (int j = 0; j < cycle.size(); ++ j) {
+      Var x = var(cycle[j]);
+      frozen[x] = true;
+    }
+  }
+
+  Solver::addSymmetryGenerator(generator);
+}

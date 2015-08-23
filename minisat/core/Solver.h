@@ -56,6 +56,10 @@ public:
     bool    addClause_(      vec<Lit>& ps);                     // Add a clause to the solver without making superflous internal copy. Will
                                                                 // change the passed vector 'ps'.
 
+    // Symmetry specification
+    //
+    void    addSymmetryGenerator(const vec<vec<Lit> >& generator);
+
     // Solving:
     //
     bool    simplify     ();                        // Removes already satisfied clauses.

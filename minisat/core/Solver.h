@@ -58,7 +58,7 @@ public:
 
     // Symmetry specification
     //
-    void    addSymmetryGenerator(const vec<vec<Lit> >& generator);
+    void    addSymmetryGenerator(vec<vec<Lit> >& generator);
 
     // Solving:
     //

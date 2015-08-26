@@ -91,6 +91,14 @@ public:
     // Duplicatation (preferred instead):
     void copyTo(vec<T>& copy) const { copy.clear(); copy.growTo(sz); for (Size i = 0; i < sz; i++) copy[i] = data[i]; }
     void moveTo(vec<T>& dest) { dest.clear(true); dest.data = data; dest.sz = sz; dest.cap = cap; data = NULL; sz = 0; cap = 0; }
+    void swapWith(vec<T>& v) {
+      T* tmp_data = v.data; v.data = data; data = tmp_data;
+      Size tmp = v.sz; v.sz = sz; sz = tmp;
+      tmp = v.cap; v.cap = cap; cap = tmp;
+    }
+
+    // Rotation
+    void rotate(Size new_start);
 };
 
 
@@ -127,6 +135,19 @@ void vec<T,_Size>::clear(bool dealloc) {
         for (Size i = 0; i < sz; i++) data[i].~T();
         sz = 0;
         if (dealloc) free(data), data = NULL, cap = 0; } }
+
+template<class T, class _Size>
+void vec<T, _Size>::rotate(Size new_start) {
+  assert(0 < new_start && new_start < size());
+  Size i, j = new_start;  // write at i, read at j
+  new_start = 0;          // keeps track where the original first element is stored
+  // always: i <= new_start <= j, i < j
+  for (i = 0; i < j; i++) {
+    T tmp = data[i]; data[i] = data[j]; data[j] = tmp;
+    if (i == new_start) new_start = j;
+    if (++j == size()) j = new_start;
+  }
+}
 
 //=================================================================================================
 }

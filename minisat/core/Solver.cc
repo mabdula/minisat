@@ -1065,6 +1065,45 @@ void Solver::garbageCollect()
     to.moveTo(ca);
 }
 
-void Solver::addSymmetryGenerator(const vec<vec<Lit> >& generator) {
-  // TODO: Add the generator
+struct cycle_lt {
+  bool operator () (const vec<Lit>& x, const vec<Lit>& y) {
+    return x[0] < y[0];
+  }
+};
+
+struct cycle_swap {
+  void operator () (vec<Lit>& x, vec<Lit>& y) {
+    x.swapWith(y);
+  }
+};
+
+void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
+
+  // Normalize the generator to the form
+  //   G = c_1 c_2 ... c_m
+  // where each cycle
+  //   c_i = (l_i,1 l_i,2 ... l_i,ni)
+  //   l_i,1 < l_i,2 ... l_i,ni
+  // and
+  //   l_i,1 < l_j,1 for i < j
+
+  // Normalize each cycle
+  int gen_i;
+  for (gen_i = 0; gen_i < generator.size(); ++ gen_i) {
+    // The cycle
+    vec<Lit>& cycle = generator[gen_i];
+    assert(cycle.size() > 1);
+    // Get the smallest one
+    int cycle_i, min_cycle_i = 0;
+    for (cycle_i = 1; cycle_i < cycle.size(); ++ cycle_i) {
+      if (cycle[cycle_i] < cycle[min_cycle_i]) {
+        min_cycle_i = cycle_i;
+      }
+    }
+    // Rotate
+    cycle.rotate(min_cycle_i);
+  }
+
+  // Now sort the cycles based on first elements
+  sort<vec<Lit>, cycle_lt, cycle_swap>(generator, cycle_lt(), cycle_swap());
 }

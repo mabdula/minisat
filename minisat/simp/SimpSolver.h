@@ -52,7 +52,7 @@ class SimpSolver : public Solver {
 
     // Symmetry specification
     //
-    void    addSymmetryGenerator(const vec<vec<Lit> >& generator);
+    void    addSymmetryGenerator(vec<vec<Lit> >& generator);
 
     // Variable mode:
     // 

@@ -34,12 +34,16 @@ struct LessThan_default {
     bool operator () (T x, T y) { return x < y; }
 };
 
+template <class T>
+struct Swap_default {
+    T tmp;
+    void operator () (T& x, T& y) { tmp = x; x = y; y = tmp; }
+};
 
-template <class T, class LessThan>
-void selectionSort(T* array, int size, LessThan lt)
+template <class T, class LessThan, class Swap>
+void selectionSort(T* array, int size, LessThan lt, Swap swap)
 {
     int     i, j, best_i;
-    T       tmp;
 
     for (i = 0; i < size-1; i++){
         best_i = i;
@@ -47,21 +51,25 @@ void selectionSort(T* array, int size, LessThan lt)
             if (lt(array[j], array[best_i]))
                 best_i = j;
         }
-        tmp = array[i]; array[i] = array[best_i]; array[best_i] = tmp;
+        swap(array[i], array[best_i]);
     }
 }
-template <class T> static inline void selectionSort(T* array, int size) {
-    selectionSort(array, size, LessThan_default<T>()); }
-
 template <class T, class LessThan>
-void sort(T* array, int size, LessThan lt)
+void selectionSort(T* array, int size, LessThan lt) {
+  selectionSort(array, size, lt, Swap_default<T>());
+}
+
+template <class T> static inline void selectionSort(T* array, int size) {
+    selectionSort(array, size, LessThan_default<T>(), Swap_default<T>()); }
+
+template <class T, class LessThan, class Swap>
+void sort(T* array, int size, LessThan lt, Swap swap)
 {
     if (size <= 15)
-        selectionSort(array, size, lt);
+        selectionSort(array, size, lt, swap);
 
     else{
-        T           pivot = array[size / 2];
-        T           tmp;
+        const T&    pivot = array[size / 2];
         int         i = -1;
         int         j = size;
 
@@ -71,25 +79,27 @@ void sort(T* array, int size, LessThan lt)
 
             if (i >= j) break;
 
-            tmp = array[i]; array[i] = array[j]; array[j] = tmp;
+            swap(array[i], array[j]);
         }
 
-        sort(array    , i     , lt);
-        sort(&array[i], size-i, lt);
+        sort(array    , i     , lt, swap);
+        sort(&array[i], size-i, lt, swap);
     }
 }
 template <class T> static inline void sort(T* array, int size) {
-    sort(array, size, LessThan_default<T>()); }
+    sort(array, size, LessThan_default<T>(), Swap_default<T>()); }
 
 
 //=================================================================================================
 // For 'vec's:
 
 
+template <class T, class LessThan, class Swap> void sort(vec<T>& v, LessThan lt, Swap swap) {
+    sort((T*)v, v.size(), lt, swap); }
 template <class T, class LessThan> void sort(vec<T>& v, LessThan lt) {
-    sort((T*)v, v.size(), lt); }
+    sort((T*)v, v.size(), lt, Swap_default<T>()); }
 template <class T> void sort(vec<T>& v) {
-    sort(v, LessThan_default<T>()); }
+    sort(v, LessThan_default<T>(), Swap_default<T>()); }
 
 
 //=================================================================================================

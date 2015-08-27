@@ -1106,4 +1106,10 @@ void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
   // Now sort the cycles based on first elements
   sort<vec<Lit>, cycle_lt, cycle_swap>(generator, cycle_lt(), cycle_swap());
+
+  // Allocate
+  SymmRef sref = sa.alloc(generator);
+  symmetries.push(sref);
+
+  // Attach
 }

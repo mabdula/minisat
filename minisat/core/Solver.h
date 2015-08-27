@@ -222,6 +222,11 @@ protected:
     vec<Var>            released_vars;
     vec<Var>            free_vars;
 
+    // Symmetry breaking state
+    //
+    SymmAllocator       sa;
+    vec<SymmRef>        symmetries;       // List of symmetry generators added
+
     // Temporaries (to reduce allocation overhead). Each variable is prefixed by the method in which it is
     // used, exept 'seen' wich is used in several places.
     //

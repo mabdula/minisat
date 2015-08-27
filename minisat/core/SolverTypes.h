@@ -473,6 +473,89 @@ inline void Clause::strengthen(Lit p)
 }
 
 //=================================================================================================
+// SymmGenerator -- a simple class for representing a symmetry generator (cycles):
+
+class SymmGenerator;
+typedef RegionAllocator<uint32_t>::Ref SymmRef;
+
+class SymmGenerator {
+
+  struct {
+      unsigned cycles : 32; // Number of cycles
+  } header;
+
+  // Organized as:
+  // b1, b2, ..., bn : start positions of the cycles
+  // undef-termianted literal lists per cycle
+  union { uint32_t begin; Lit lit; } data[0];
+
+  friend class SymmAllocator;
+
+  // NOTE: This constructor cannot be used directly (doesn't allocate enough memory).
+  SymmGenerator(const vec<vec<Lit> >& G) {
+    int i, j;
+    // Size of the generator
+    header.cycles = G.size();
+    // Generators and their positions
+    uint32_t pos = G.size();
+    for (i = 0; i < G.size(); i++) {
+      data[i].begin = pos;
+      for (j = 0; j < G[i].size(); ++ j) {
+        data[pos + j].lit = G[i][j];
+      }
+      data[pos + j].lit = lit_Undef;
+      pos += G[i].size() + 1;
+    }
+  }
+
+public:
+
+  int          size        ()      const   { return header.cycles; }
+  const Lit*   operator [] (int i) const   { assert(i < size()); return &(data + data[i].begin)->lit; }
+};
+
+
+//=================================================================================================
+// SymmertyAllocator -- a simple class for allocating memory for symmetry generators:
+
+const SymmRef SymmRef_Undef = RegionAllocator<uint32_t>::Ref_Undef;
+class SymmAllocator
+{
+  RegionAllocator<uint32_t> ra;
+
+  static uint32_t generatorSize(const vec<vec<Lit> >& generator) {
+    int elements = 0;
+    for (int i = 0; i < generator.size(); ++ i) {
+      elements += 2 + generator[i].size(); // One for begin, other for null
+    }
+    return (sizeof(SymmGenerator) + (sizeof(Lit) * elements));
+  }
+
+ public:
+
+  enum { Unit_Size = RegionAllocator<uint32_t>::Unit_Size };
+
+  SymmRef alloc(const vec<vec<Lit> >& generator)
+  {
+    assert(sizeof(Lit) == sizeof(uint32_t));
+    SymmRef sid = ra.alloc(generatorSize(generator));
+    new (lea(sid)) SymmGenerator(generator);
+    return sid;
+  }
+
+  uint32_t size      () const      { return ra.size(); }
+  uint32_t wasted    () const      { return ra.wasted(); }
+
+  // Deref, Load Effective Address (LEA), Inverse of LEA (AEL):
+  SymmGenerator&       operator[](SymmRef r)              { return (SymmGenerator&)ra[r]; }
+  const SymmGenerator& operator[](SymmRef r) const        { return (SymmGenerator&)ra[r]; }
+  SymmGenerator*       lea       (SymmRef r)              { return (SymmGenerator*)ra.lea(r); }
+  const SymmGenerator* lea       (SymmRef r) const        { return (SymmGenerator*)ra.lea(r);; }
+  SymmRef              ael       (const SymmGenerator* t) { return ra.ael((uint32_t*)t); }
+};
+
+
+//=================================================================================================
 }
 
 #endif

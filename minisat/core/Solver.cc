@@ -1086,6 +1086,9 @@ void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   //   l_i,1 < l_i,2 ... l_i,ni
   // and
   //   l_i,1 < l_j,1 for i < j
+  //
+  // In adition since c_i and it's (Boolan) negation are semantically the same
+  // we only keep the versions of the cycles that start with a positive variable
 
   // Normalize each cycle
   int gen_i;
@@ -1102,10 +1105,36 @@ void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
     }
     // Rotate
     cycle.rotate(min_cycle_i);
+    // Normalize
+    if (sign(cycle[0])) {
+      for (cycle_i = 0; cycle_i < cycle.size(); ++ cycle_i) {
+        cycle[cycle_i] = ~cycle[cycle_i];
+      }
+    }
   }
 
   // Now sort the cycles based on first elements
   sort<vec<Lit>, cycle_lt, cycle_swap>(generator, cycle_lt(), cycle_swap());
+
+  // Compact by removing duplicates
+  int keep = 1;
+  for (gen_i = 1; gen_i < generator.size(); ++ gen_i) {
+    const vec<Lit>& prev = generator[keep-1];
+    const vec<Lit>& current = generator[gen_i];
+    // Enough to check first two
+    if (prev[0] != current[0]) {
+      generator[keep++].swapWith(generator[gen_i]);
+    } else {
+#ifndef NDEBUG
+      assert(prev.size() == current.size());
+      int cycle_i;
+      for (cycle_i = 0; cycle_i < prev.size(); ++ cycle_i) {
+        assert(prev[cycle_i] == current[cycle_i]);
+      }
+#endif
+    }
+  }
+  generator.shrink(gen_i - keep);
 
   // Allocate
   SymmRef sref = sa.alloc(generator);

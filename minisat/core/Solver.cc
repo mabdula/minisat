@@ -46,6 +46,7 @@ static DoubleOption  opt_restart_inc       (_cat, "rinc",        "Restart interv
 static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction of wasted memory allowed before a garbage collection is triggered",  0.20, DoubleRange(0, false, HUGE_VAL, false));
 static IntOption     opt_min_learnts_lim   (_cat, "min-learnts", "Minimum learnt clause limit",  0, IntRange(0, INT32_MAX));
 
+static BoolOption    opt_symm_strong_def   ("SYMMETRY", "strong-def", "Use strong definitions when converting to CNF", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -1184,4 +1185,76 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   }
 
   return ok;
+}
+
+void Solver::addSymmetryHelpers(SymmRef sref) {
+
+  const SymmGenerator& G = sa[sref];
+
+  int i;
+  for (i = 0; i < G.size(); ++ i) {
+    const Lit* l_1 = G[i];
+
+    vec<Var> eq_vars;
+
+    // Add equalities eq = (l_1 = l_k), for k > 1
+    const Lit* l_k = l_1 + 1;
+    for (; *l_k != lit_Undef; ++ l_k) {
+      Var eq = addSymmetryEq(*l_1, *l_k);
+      eq_vars.push(eq);
+    }
+
+    // Now add cycle variable (NOT A DECISION VARIABLE)
+    Var cycle_var = newVar(l_Undef, false);
+    Lit cycle = mkLit(cycle_var, false);
+
+    // Add the definition for c = (eq1 & ... & eqn)
+    // (eq1 & ... & eqn) => c
+    // !eq1 | !eq2 | ... | !eqn | c
+    vec<Lit> clause;
+    for (int i = 0; i < eq_vars.size(); ++ i) {
+      clause.push(mkLit(eq_vars[i], true));
+      clause.push(cycle);
+    }
+    addClause(clause);
+
+    // c => (eq1 & ... & eqn)
+    // !c | eq_i
+    for (int i = 0; i < eq_vars.size(); ++ i) {
+      addClause(mkLit(eq_vars[i], false), ~cycle);
+    }
+  }
+}
+
+Var Solver::addSymmetryEq(Lit l1, Lit l2) {
+
+  assert(ok);
+
+  // TODO: Check if added already
+
+  // Add the equality variable (NOT A DECISION VARIABLE)
+  Var eq_var = newVar(l_Undef, false);
+  Lit eq = mkLit(eq_var, false);
+
+  // (l1 & l2) => eq
+  // !l1 | !l2 | eq
+  addClause(~l1, ~l2, eq);
+
+  // (!l1 & !l2) => eq
+  // l1 | l2 | eq
+  addClause(l1, l2, eq);
+
+  if (opt_symm_strong_def) {
+    // eq => (l1 = l2)
+    // eq => (l1 | !l2) & (!l1 | l2)
+    // (!eq | l1 | !l2) & (!eq | !l1 | l2)
+    addClause(l1, ~l2, ~eq);
+    addClause(~l1, ~l2, ~eq);
+  }
+
+  // Propaget (no conflict should happen, these are just definitions)
+  ok = (propagate() == CRef_Undef);
+  assert(ok);
+
+  return eq_var;
 }

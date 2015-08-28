@@ -69,7 +69,7 @@ int main(int argc, char** argv)
         BoolOption   strictp("MAIN", "strict", "Validate DIMACS header during parsing.", false);
 
         // Symmetry options:
-        StringOption symmetry("SYMMETRY BREAKING", "symm", "Symmetry definitions.");
+        StringOption symmetry("MAIN", "symm", "Symmetry definitions.");
 
         parseOptions(argc, argv, true);
         

@@ -838,6 +838,8 @@ static double luby(double y, int x){
 // NOTE: assumptions passed in member-variable 'assumptions'.
 lbool Solver::solve_()
 {
+    assert(symmetries.size() == 0 || assumptions.size() == 0); // Don't support assumption solving with symmetries
+
     model.clear();
     conflict.clear();
     if (!ok) return l_False;
@@ -1077,7 +1079,11 @@ struct cycle_swap {
   }
 };
 
-void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
+bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
+
+  if (!ok) {
+    return ok;
+  }
 
   // Normalize the generator to the form
   //   G = c_1 c_2 ... c_m
@@ -1141,4 +1147,41 @@ void Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   symmetries.push(sref);
 
   // Attach
+  //
+
+  // Find the first unassigned block
+  SymmGenerator& G = sa[sref];
+  int cycle_i;
+  for (cycle_i = 0; cycle_i < G.size(); ++ cycle_i) {
+    const Lit* l;
+    lbool prev_value = l_False;
+    for (l = G[cycle_i]; *l != lit_Undef; ++ l) {
+      lbool l_value = value(*l);
+      // If undef we found the unassigned block
+      if (l_value == l_Undef) {
+        // If true, we propagate the other literals
+        if (l_value == l_True) {
+          for (; *l != lit_Undef; ++ l) {
+            uncheckedEnqueue(*l);
+            ok = propagate() == CRef_Undef;
+            if (!ok) {
+              return ok;
+            }
+          }
+          // Continue with the next block
+          break;
+        } else {
+          // Found the block, attach this block
+          break;
+        }
+      }
+      // Unacceptable to go to smaller value
+      if (prev_value == l_True && l_value == l_False) {
+        return ok = false;
+      }
+
+    }
+  }
+
+  return ok;
 }

@@ -724,7 +724,7 @@ void SimpSolver::garbageCollect()
     to.moveTo(ca);
 }
 
-void SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
+bool SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
   // Mark all the symmetry variables as frozen
   for (int i = 0; i < generator.size(); ++ i){
@@ -735,5 +735,5 @@ void SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
     }
   }
 
-  Solver::addSymmetryGenerator(generator);
+  return Solver::addSymmetryGenerator(generator);
 }

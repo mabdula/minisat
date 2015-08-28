@@ -58,7 +58,7 @@ public:
 
     // Symmetry specification
     //
-    void    addSymmetryGenerator(vec<vec<Lit> >& generator);
+    bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
 
     // Solving:
     //
@@ -225,7 +225,7 @@ protected:
     // Symmetry breaking state
     //
     SymmAllocator       sa;
-    vec<SymmRef>        symmetries;       // List of symmetry generators added
+    vec<SymmRef>        symmetries;          // List of symmetry generators added
 
     // Temporaries (to reduce allocation overhead). Each variable is prefixed by the method in which it is
     // used, exept 'seen' wich is used in several places.

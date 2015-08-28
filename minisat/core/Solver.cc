@@ -1189,19 +1189,22 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
 void Solver::addSymmetryHelpers(SymmRef sref) {
 
+  assert(ok);
+  assert(decisionLevel() == 0);
+
   const SymmGenerator& G = sa[sref];
 
   int i;
   for (i = 0; i < G.size(); ++ i) {
     const Lit* l_1 = G[i];
 
-    vec<Var> eq_vars;
+    vec<Lit> eqs;
 
     // Add equalities eq = (l_1 = l_k), for k > 1
     const Lit* l_k = l_1 + 1;
     for (; *l_k != lit_Undef; ++ l_k) {
-      Var eq = addSymmetryEq(*l_1, *l_k);
-      eq_vars.push(eq);
+      Lit eq = addSymmetryEq(*l_1, *l_k);
+      eqs.push(eq);
     }
 
     // Now add cycle variable (NOT A DECISION VARIABLE)
@@ -1212,23 +1215,27 @@ void Solver::addSymmetryHelpers(SymmRef sref) {
     // (eq1 & ... & eqn) => c
     // !eq1 | !eq2 | ... | !eqn | c
     vec<Lit> clause;
-    for (int i = 0; i < eq_vars.size(); ++ i) {
-      clause.push(mkLit(eq_vars[i], true));
+    for (int i = 0; i < eqs.size(); ++ i) {
+      clause.push(~eqs[i]);
       clause.push(cycle);
     }
     addClause(clause);
 
     // c => (eq1 & ... & eqn)
     // !c | eq_i
-    for (int i = 0; i < eq_vars.size(); ++ i) {
-      addClause(mkLit(eq_vars[i], false), ~cycle);
+    for (int i = 0; i < eqs.size(); ++ i) {
+      addClause(eqs[i], ~cycle);
     }
+
+    ok = (propagate() == CRef_Undef);
+    assert(ok);
   }
 }
 
-Var Solver::addSymmetryEq(Lit l1, Lit l2) {
+Lit Solver::addSymmetryEq(Lit l1, Lit l2) {
 
   assert(ok);
+  assert(decisionLevel() == 0);
 
   // TODO: Check if added already
 
@@ -1256,5 +1263,5 @@ Var Solver::addSymmetryEq(Lit l1, Lit l2) {
   ok = (propagate() == CRef_Undef);
   assert(ok);
 
-  return eq_var;
+  return mkLit(eq_var, false);
 }

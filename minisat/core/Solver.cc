@@ -46,8 +46,6 @@ static DoubleOption  opt_restart_inc       (_cat, "rinc",        "Restart interv
 static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction of wasted memory allowed before a garbage collection is triggered",  0.20, DoubleRange(0, false, HUGE_VAL, false));
 static IntOption     opt_min_learnts_lim   (_cat, "min-learnts", "Minimum learnt clause limit",  0, IntRange(0, INT32_MAX));
 
-static BoolOption    opt_symm_strong_def   ("SYMMETRY", "strong-def", "Use strong definitions when converting to CNF", false);
-
 //=================================================================================================
 // Constructor/Destructor:
 
@@ -839,8 +837,6 @@ static double luby(double y, int x){
 // NOTE: assumptions passed in member-variable 'assumptions'.
 lbool Solver::solve_()
 {
-    assert(symmetries.size() == 0 || assumptions.size() == 0); // Don't support assumption solving with symmetries
-
     model.clear();
     conflict.clear();
     if (!ok) return l_False;
@@ -1143,125 +1139,5 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   }
   generator.shrink(gen_i - keep);
 
-  // Allocate
-  SymmRef sref = sa.alloc(generator);
-  symmetries.push(sref);
-
-  // Attach
-  //
-
-  // Find the first unassigned block
-  SymmGenerator& G = sa[sref];
-  int cycle_i;
-  for (cycle_i = 0; cycle_i < G.size(); ++ cycle_i) {
-    const Lit* l;
-    lbool prev_value = l_False;
-    for (l = G[cycle_i]; *l != lit_Undef; ++ l) {
-      lbool l_value = value(*l);
-      // If undef we found the unassigned block
-      if (l_value == l_Undef) {
-        // If true, we propagate the other literals
-        if (l_value == l_True) {
-          for (; *l != lit_Undef; ++ l) {
-            uncheckedEnqueue(*l);
-            ok = propagate() == CRef_Undef;
-            if (!ok) {
-              return ok;
-            }
-          }
-          // Continue with the next block
-          break;
-        } else {
-          // Found the block, attach this block
-          break;
-        }
-      }
-      // Unacceptable to go to smaller value
-      if (prev_value == l_True && l_value == l_False) {
-        return ok = false;
-      }
-
-    }
-  }
-
   return ok;
-}
-
-void Solver::addSymmetryHelpers(SymmRef sref) {
-
-  assert(ok);
-  assert(decisionLevel() == 0);
-
-  const SymmGenerator& G = sa[sref];
-
-  int i;
-  for (i = 0; i < G.size(); ++ i) {
-    const Lit* l_1 = G[i];
-
-    vec<Lit> eqs;
-
-    // Add equalities eq = (l_1 = l_k), for k > 1
-    const Lit* l_k = l_1 + 1;
-    for (; *l_k != lit_Undef; ++ l_k) {
-      Lit eq = addSymmetryEq(*l_1, *l_k);
-      eqs.push(eq);
-    }
-
-    // Now add cycle variable (NOT A DECISION VARIABLE)
-    Var cycle_var = newVar(l_Undef, false);
-    Lit cycle = mkLit(cycle_var, false);
-
-    // Add the definition for c = (eq1 & ... & eqn)
-    // (eq1 & ... & eqn) => c
-    // !eq1 | !eq2 | ... | !eqn | c
-    vec<Lit> clause;
-    for (int i = 0; i < eqs.size(); ++ i) {
-      clause.push(~eqs[i]);
-      clause.push(cycle);
-    }
-    addClause(clause);
-
-    // c => (eq1 & ... & eqn)
-    // !c | eq_i
-    for (int i = 0; i < eqs.size(); ++ i) {
-      addClause(eqs[i], ~cycle);
-    }
-
-    ok = (propagate() == CRef_Undef);
-    assert(ok);
-  }
-}
-
-Lit Solver::addSymmetryEq(Lit l1, Lit l2) {
-
-  assert(ok);
-  assert(decisionLevel() == 0);
-
-  // TODO: Check if added already
-
-  // Add the equality variable (NOT A DECISION VARIABLE)
-  Var eq_var = newVar(l_Undef, false);
-  Lit eq = mkLit(eq_var, false);
-
-  // (l1 & l2) => eq
-  // !l1 | !l2 | eq
-  addClause(~l1, ~l2, eq);
-
-  // (!l1 & !l2) => eq
-  // l1 | l2 | eq
-  addClause(l1, l2, eq);
-
-  if (opt_symm_strong_def) {
-    // eq => (l1 = l2)
-    // eq => (l1 | !l2) & (!l1 | l2)
-    // (!eq | l1 | !l2) & (!eq | !l1 | l2)
-    addClause(l1, ~l2, ~eq);
-    addClause(~l1, ~l2, ~eq);
-  }
-
-  // Propaget (no conflict should happen, these are just definitions)
-  ok = (propagate() == CRef_Undef);
-  assert(ok);
-
-  return mkLit(eq_var, false);
 }

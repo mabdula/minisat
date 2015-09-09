@@ -222,13 +222,6 @@ protected:
     vec<Var>            released_vars;
     vec<Var>            free_vars;
 
-    // Symmetry breaking state
-    //
-    SymmAllocator       sa;
-    vec<SymmRef>        symmetries;          // List of symmetry generators added
-
-    void addSymmetryHelpers(SymmRef sref);   // Add helper variables/clauses for the generator
-    Lit  addSymmetryEq(Lit l1, Lit l2);      // Add definitions of l = (l1 = l2) and return l
 
     // Temporaries (to reduce allocation overhead). Each variable is prefixed by the method in which it is
     // used, exept 'seen' wich is used in several places.

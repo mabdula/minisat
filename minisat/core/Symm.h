@@ -28,6 +28,11 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 namespace Minisat {
 
+  typedef struct{int* f; //Permutaiton, always of size S.numVars()
+                 unsigned int* dom; //The variables that are not mapped to themselves
+                 unsigned int domSize;//The number of variables that are not mapped to themselves
+                 } Permutation;
+
 //=================================================================================================
 // SYMMETRY Parser:
 

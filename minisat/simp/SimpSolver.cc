@@ -740,7 +740,7 @@ bool SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
 void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport)
   {
-    printf("Adding shatter SBP clauses\n");
+    //printf("Adding shatter SBP clauses\n");
     unsigned int i = 0 ;
     for (i = 0; i < nsupport; i++)
       {
@@ -790,7 +790,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
         clause4.push(~mkLit(nextVar));
         this->addClause_(clause4);
       }
-    printf("Added shatter SBP clauses\n");
+    //printf("Added shatter SBP clauses\n");
 
   }
 

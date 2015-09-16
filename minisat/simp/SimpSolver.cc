@@ -297,7 +297,6 @@ void SimpSolver::gatherTouchedClauses()
     for (i = j = 0; i < subsumption_queue.size(); i++)
         if (ca[subsumption_queue[i]].mark() == 0)
             ca[subsumption_queue[i]].mark(2);
-
     for (i = 0; i < nVars(); i++)
         if (touched[i]){
             const vec<CRef>& cs = occurs.lookup(i);
@@ -308,6 +307,7 @@ void SimpSolver::gatherTouchedClauses()
                 }
             touched[i] = 0;
         }
+    printf("xxx\r\n");
 
     for (i = 0; i < subsumption_queue.size(); i++)
         if (ca[subsumption_queue[i]].mark() == 2)
@@ -598,12 +598,11 @@ bool SimpSolver::eliminate(bool turn_off_elim)
         return false;
     else if (!use_simplification)
         return true;
-
+    printf("n_touched = %d\r\n", n_touched);
     // Main simplification loop:
     //
     while (n_touched > 0 || bwdsub_assigns < trail.size() || elim_heap.size() > 0){
-
-        gatherTouchedClauses();
+        gatherTouchedClauses();        
         // printf("  ## (time = %6.2f s) BWD-SUB: queue = %d, trail = %d\n", cpuTime(), subsumption_queue.size(), trail.size() - bwdsub_assigns);
         if ((subsumption_queue.size() > 0 || bwdsub_assigns < trail.size()) && 
             !backwardSubsumptionCheck(true)){
@@ -737,3 +736,64 @@ bool SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
   return Solver::addSymmetryGenerator(generator);
 }
+
+
+void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport)
+  {
+    printf("Adding shatter SBP clauses\n");
+    unsigned int i = 0 ;
+    for (i = 0; i < nsupport; i++)
+      {
+        lbool tempVar;
+        this->newVar(tempVar, false);
+      }
+    vec<Lit> clause0;
+    clause0.push(mkLit(this->nVars() - nsupport - 1));//Variable IDs start from 0
+    this->addClause_(clause0);
+    for (i = 1; i < nsupport; ++i)
+      {
+    	/* again, terminate at phase shift */
+
+    	/* if (p[x] == -x) { */
+    	/* 	clause(-vars, -z, -x, 0); */
+    	/* 	clause(-vars, p[z], -x, 0); */
+    	/* 	break; */
+    	/* } */
+        unsigned int thisVar = this->nVars() - (nsupport) + i -1 ;
+        unsigned int nextVar = this->nVars() - (nsupport) + i;
+        printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
+        vec<Lit> clause1;
+        clause1.push(~mkLit(this->nVars() - nsupport + i));
+        clause1.push(~mkLit(support[i-1]));
+        clause1.push(~mkLit(support[i]));
+        clause1.push(~mkLit(perm[support[i]]));
+        this->addClause_(clause1);
+
+        vec<Lit> clause2;
+        clause2.push(~mkLit(thisVar ));
+        clause2.push(~mkLit(support[i-1]));
+        clause2.push(~mkLit(nextVar));
+        this->addClause_(clause2);
+        
+        vec<Lit> clause3;
+        clause3.push(~mkLit(thisVar));
+        clause3.push(mkLit(perm[support[i-1]]));
+        clause3.push(~mkLit(support[i]));
+        clause3.push(mkLit(perm[support[i]]));
+        this->addClause_(clause3);
+
+        vec<Lit> clause4;
+        clause4.push(~mkLit(thisVar));
+        clause4.push(mkLit(support[i]));
+        clause4.push(~mkLit(nextVar));
+        this->addClause_(clause4);
+      }
+    printf("Added shatter SBP clauses\n");
+
+  }
+
+bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
+  addShatterSBP(perm.f, perm.dom, perm.domSize);
+  return ok;
+}
+

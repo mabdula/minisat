@@ -127,7 +127,6 @@ int main(int argc, char** argv)
         // Change to signal-handlers that will only notify the solver and allow it to terminate
         // voluntarily:
         sigTerm(SIGINT_interrupt);
-
         S.eliminate(true);
         double simplified_time = cpuTime();
         if (S.verbosity > 0){

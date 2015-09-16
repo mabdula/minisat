@@ -1149,46 +1149,49 @@ void Solver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsuppo
     for (i = 0; i < nsupport; i++)
       {
         lbool tempVar;
-        this->newVar(tempVar, true);
+        this->newVar();//(tempVar, true);
       }
-    for (i = 1; i < nsupport; ++i)
-      {
-	/* again, terminate at phase shift */
+    //vec<Lit> clause0;
+    //clause0.push(mkLit(this->nVars() - nsupport - 1));//Variable IDs start from 0
+    //this->addClause_(clause0);
+    // for (i = 1; i < nsupport; ++i)
+    //   {
+    // 	/* again, terminate at phase shift */
 
-	/* if (p[x] == -x) { */
-	/* 	clause(-vars, -z, -x, 0); */
-	/* 	clause(-vars, p[z], -x, 0); */
-	/* 	break; */
-	/* } */
-        unsigned int thisVar = this->nVars() - (nsupport) + i -1 ;
-        unsigned int nextVar = this->nVars() - (nsupport) + i;
-        printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
-        vec<Lit> clause1;
-        clause1.push(~mkLit(this->nVars() - nsupport + i));
-        clause1.push(~mkLit(support[i-1]));
-        clause1.push(~mkLit(support[i]));
-        clause1.push(~mkLit(perm[support[i]]));
-        this->addClause_(clause1);
+    // 	/* if (p[x] == -x) { */
+    // 	/* 	clause(-vars, -z, -x, 0); */
+    // 	/* 	clause(-vars, p[z], -x, 0); */
+    // 	/* 	break; */
+    // 	/* } */
+    //     unsigned int thisVar = this->nVars() - (nsupport) + i -1 ;
+    //     unsigned int nextVar = this->nVars() - (nsupport) + i;
+    //     printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
+    //     vec<Lit> clause1;
+    //     clause1.push(~mkLit(this->nVars() - nsupport + i));
+    //     clause1.push(~mkLit(support[i-1]));
+    //     clause1.push(~mkLit(support[i]));
+    //     clause1.push(~mkLit(perm[support[i]]));
+    //     this->addClause_(clause1);
 
-        vec<Lit> clause2;
-        clause2.push(~mkLit(thisVar ));
-        clause2.push(~mkLit(support[i-1]));
-        clause2.push(~mkLit(nextVar));
-        this->addClause_(clause2);
+    //     vec<Lit> clause2;
+    //     clause2.push(~mkLit(thisVar ));
+    //     clause2.push(~mkLit(support[i-1]));
+    //     clause2.push(~mkLit(nextVar));
+    //     this->addClause_(clause2);
         
-        vec<Lit> clause3;
-        clause3.push(~mkLit(thisVar));
-        clause3.push(mkLit(perm[support[i-1]]));
-        clause3.push(~mkLit(support[i]));
-        clause3.push(mkLit(perm[support[i]]));
-        this->addClause_(clause3);
+    //     vec<Lit> clause3;
+    //     clause3.push(~mkLit(thisVar));
+    //     clause3.push(mkLit(perm[support[i-1]]));
+    //     clause3.push(~mkLit(support[i]));
+    //     clause3.push(mkLit(perm[support[i]]));
+    //     this->addClause_(clause3);
 
-        vec<Lit> clause4;
-        clause4.push(~mkLit(thisVar));
-        clause4.push(mkLit(support[i]));
-        clause4.push(~mkLit(nextVar));
-        this->addClause_(clause4);
-      }
+    //     vec<Lit> clause4;
+    //     clause4.push(~mkLit(thisVar));
+    //     clause4.push(mkLit(support[i]));
+    //     clause4.push(~mkLit(nextVar));
+    //     this->addClause_(clause4);
+    //   }
     printf("Added shatter SBP clauses\n");
 
   }

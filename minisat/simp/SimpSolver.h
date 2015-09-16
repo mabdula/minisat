@@ -54,6 +54,8 @@ namespace Minisat {
     //
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
     using Solver::addSymmetryGenerator;
+    using Solver::addShatterSBP;
+
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

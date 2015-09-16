@@ -61,7 +61,7 @@ public:
     //
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
     bool    addSymmetryGenerator(Minisat::Permutation& perm);
-
+    void    addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
     // Solving:
     //
     bool    simplify     ();                        // Removes already satisfied clauses.

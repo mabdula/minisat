@@ -30,7 +30,7 @@ namespace Minisat {
 //=================================================================================================
 
 
-class SimpSolver : public Solver {
+ class SimpSolver : public Solver {
  public:
     // Constructor/Destructor:
     //
@@ -52,8 +52,8 @@ class SimpSolver : public Solver {
 
     // Symmetry specification
     //
-    bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
-
+    bool addSymmetryGenerator(vec<vec<Lit> >& generator);
+    using Solver::addSymmetryGenerator;
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

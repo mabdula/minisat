@@ -1141,3 +1141,7 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
 
   return ok;
 }
+
+bool Solver::addSymmetryGenerator(Minisat::Permutation& perm) {
+  return ok;
+}

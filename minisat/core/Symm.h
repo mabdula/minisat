@@ -60,9 +60,72 @@ static void readGenerator(B& in, vec< vec<Lit> >& generator) {
     }
 }
 
+
+template<class B>
+  static void readGenerator(B& in, Permutation* perm) {
+    B symmFile = in;
+    int* currentPerm = perm->f;
+    unsigned int* support = perm->dom;
+    unsigned int* nsupport = &(perm->domSize);
+
+    int l1, l2;
+    (*nsupport) = 0;
+    l1 = parseInt(symmFile);
+    l2 = parseInt(symmFile);
+    if(abs(l1) >= abs(l2))
+      {
+        if(l1 > 0)
+          {
+            currentPerm[l1] = l2; 
+            support[0] = l1;
+            (*nsupport)++;
+          }
+      }
+    else
+      {
+        if(l2 > 0)
+          {
+            currentPerm[l2] = l1;
+            support[0] = l2;
+            (*nsupport)++;
+          }
+      }
+    // skipping zero
+    parseInt(symmFile); 
+    while(1)
+      {
+        l1 = parseInt(symmFile);
+        if(l1 == 0) break;
+        l2 = parseInt(symmFile);
+        //Skipping zero
+        parseInt(symmFile); 
+        if(abs(l1) >= abs(l2))
+          {
+            if(l1 > 0)
+              {
+                currentPerm[l1] = l2;
+                support[(*nsupport)] = l1;
+                (*nsupport)++;
+              }
+	  }
+        else
+          {
+            if(l2 > 0)
+              {
+                currentPerm[l2] = l1;
+                support[(*nsupport)] = l2;
+                (*nsupport)++;
+              }
+          }
+      }
+}
+
 template<class B, class Solver>
 static void parse_SYMM_main(B& in, Solver& S) {
-    vec< vec<Lit> > generator;
+    Permutation perm;
+    perm.f = (int*)malloc(sizeof(int) * (S.nVars() + 1));
+    perm.domSize = 0;
+    perm.dom = (unsigned int*)malloc(sizeof(int) * (S.nVars() + 1));
     int cnt     = 0;
     for (;;){
         skipWhitespace(in);
@@ -71,8 +134,8 @@ static void parse_SYMM_main(B& in, Solver& S) {
             skipLine(in);
         } else{
             cnt++;
-            readGenerator(in, generator);
-            S.addSymmetryGenerator(generator); }
+            readGenerator(in, &perm);
+            S.addSymmetryGenerator(perm); }
     }
 }
 

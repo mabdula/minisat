@@ -62,8 +62,7 @@ static void readGenerator(B& in, vec< vec<Lit> >& generator) {
 
 
 template<class B>
-  static void readGenerator(B& in, Permutation* perm) {
-    B symmFile = in;
+  static void readGenerator(B& symmFile, Permutation* perm) {
     int* currentPerm = perm->f;
     unsigned int* support = perm->dom;
     unsigned int* nsupport = &(perm->domSize);
@@ -122,6 +121,8 @@ template<class B>
 
 template<class B, class Solver>
 static void parse_SYMM_main(B& in, Solver& S) {
+    printf("Starting to parse perm\r\n");
+    Permutation* perm2 = new Permutation;
     Permutation perm;
     perm.f = (int*)malloc(sizeof(int) * (S.nVars() + 1));
     perm.domSize = 0;
@@ -134,6 +135,7 @@ static void parse_SYMM_main(B& in, Solver& S) {
             skipLine(in);
         } else{
             cnt++;
+            printf("Parsing perm\r\n");
             readGenerator(in, &perm);
             S.addSymmetryGenerator(perm); }
     }

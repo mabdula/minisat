@@ -72,7 +72,6 @@ int main(int argc, char** argv)
         StringOption symmetry("MAIN", "symm", "Symmetry definitions.");
 
         parseOptions(argc, argv, true);
-        
         SimpSolver  S;
         double      initial_time = cpuTime();
 

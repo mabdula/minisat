@@ -744,13 +744,14 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
   {
     //printf("Adding shatter SBP clauses\n");
     unsigned int i = 0 ;
-    for (i = 0; i < nsupport; i++)
-      {
-        lbool tempVar;
-        this->newVar(tempVar, false);
-      }
+    // for (i = 0; i < nsupport; i++)
+    //   {
+        // lbool tempVar;
+        this->newVar();
+      // }
     vec<Lit> clause0;
     //Variable IDs start from 0
+
     clause0.push(~mkLit(support[0]-1));
     if(perm[support[0]] > 0)
       clause0.push( mkLit(perm[support[0]] - 1));
@@ -766,8 +767,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     	/* 	clause(-vars, p[z], -x, 0); */
     	/* 	break; */
     	/* } */
-        int thisVar = this->nVars() - (nsupport) + i -1 ;
-        int nextVar = this->nVars() - (nsupport) + i;
+        int thisVar = this->nVars() - 1 ;
         //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
         vec<Lit> clause1;
         clause1.clear();
@@ -779,6 +779,10 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
         else
           clause1.push(~mkLit(abs(perm[support[i]]) - 1));
         this->addClause_(clause1);
+
+        this->newVar();
+
+        int nextVar = this->nVars() - 1;
 
         vec<Lit> clause2;
         clause2.clear();

@@ -69,28 +69,6 @@ template<class B>
 
     int l1, l2;
     (*nsupport) = 0;
-    l1 = parseInt(symmFile);
-    l2 = parseInt(symmFile);
-    if(abs(l1) >= abs(l2))
-      {
-        if(l1 > 0)
-          {
-            currentPerm[l1] = l2; 
-            support[0] = l1;
-            (*nsupport)++;
-          }
-      }
-    else
-      {
-        if(l2 > 0)
-          {
-            currentPerm[l2] = l1;
-            support[0] = l2;
-            (*nsupport)++;
-          }
-      }
-    // skipping zero
-    parseInt(symmFile); 
     while(1)
       {
         l1 = parseInt(symmFile);
@@ -98,10 +76,11 @@ template<class B>
         l2 = parseInt(symmFile);
         //Skipping zero
         parseInt(symmFile); 
-        if(abs(l1) >= abs(l2))
+        if(abs(l1) <= abs(l2))
           {
             if(l1 > 0)
               {
+                printf("%d->%d\n", l1, l2);
                 currentPerm[l1] = l2;
                 support[(*nsupport)] = l1;
                 (*nsupport)++;
@@ -111,6 +90,7 @@ template<class B>
           {
             if(l2 > 0)
               {
+                printf("%d->%d\n", l2, l1);
                 currentPerm[l2] = l1;
                 support[(*nsupport)] = l2;
                 (*nsupport)++;

@@ -127,7 +127,9 @@ int main(int argc, char** argv)
         // Change to signal-handlers that will only notify the solver and allow it to terminate
         // voluntarily:
         sigTerm(SIGINT_interrupt);
+        printf("Eliminating..\r\n");
         S.eliminate(true);
+        printf("Eliminated..\r\n");
         double simplified_time = cpuTime();
         if (S.verbosity > 0){
             printf("|  Simplification time:  %12.2f s                                       |\n", simplified_time - symmetry_parsed_time);

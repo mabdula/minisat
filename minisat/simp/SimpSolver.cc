@@ -42,7 +42,10 @@ static DoubleOption opt_simp_garbage_frac(_cat, "simp-gc-frac", "The fraction of
 StringOption symmetry("SYMMETRY", "symm", "Symmetry definitions.");
 BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry added auxilary variables.", false);
 BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
-
+BoolOption symm_break_shatter("SYMMETRY", "symm-break-shatter", "Break symmetries via emulating shatter.", false);
+BoolOption symm_break_chaining_imp("SYMMETRY", "symm-break-chaining-imp", "Break symmetries via implication chaining SBPs", false);
+BoolOption symm_break_shatter_eq_table("SYMMETRY", "symm-break-shatter-eq-table", "Break symmetries via emulating shatter with equality table variables.", false);
+BoolOption symm_break_chaining_imp_eq_table("SYMMETRY", "symm-break-shatter-imp-eq-table", "Break symmetries via implication chaining SBPs with equality table variables.", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -845,7 +848,14 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
 
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
-  addShatterSBP(perm.f, perm.dom, perm.domSize);
+  if(symm_break_shatter)
+    addShatterSBP(perm.f, perm.dom, perm.domSize);
+  else if(symm_break_chaining_imp)
+    {;}
+  else if(symm_break_shatter_eq_table)
+    {;}
+  else if(symm_break_chaining_imp_eq_table)
+    {;}
   return ok;
 }
 

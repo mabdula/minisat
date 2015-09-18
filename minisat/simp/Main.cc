@@ -68,8 +68,6 @@ int main(int argc, char** argv)
         IntOption    mem_lim("MAIN", "mem-lim","Limit on memory usage in megabytes.\n", 0, IntRange(0, INT32_MAX));
         BoolOption   strictp("MAIN", "strict", "Validate DIMACS header during parsing.", false);
 
-        // Symmetry options:
-        StringOption symmetry("MAIN", "symm", "Symmetry definitions.");
 
         parseOptions(argc, argv, true);
         SimpSolver  S;

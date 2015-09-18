@@ -38,6 +38,11 @@ static IntOption    opt_clause_lim       (_cat, "cl-lim",       "Variables are n
 static IntOption    opt_subsumption_lim  (_cat, "sub-lim",      "Do not check if subsumption against a clause larger than this. -1 means no limit.", 1000, IntRange(-1, INT32_MAX));
 static DoubleOption opt_simp_garbage_frac(_cat, "simp-gc-frac", "The fraction of wasted memory allowed before a garbage collection is triggered during simplification.",  0.5, DoubleRange(0, false, HUGE_VAL, false));
 
+// Symmetry options:
+StringOption symmetry("SYMMETRY", "symm", "Symmetry definitions.");
+BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry added auxilary variables.", false);
+BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
+
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -75,7 +80,6 @@ SimpSolver::~SimpSolver()
 
 
 Var SimpSolver::newVar(lbool upol, bool dvar) {
-  printf("xxx\n");
     Var v = Solver::newVar(upol, dvar);
 
     frozen    .insert(v, (char)false);
@@ -90,6 +94,20 @@ Var SimpSolver::newVar(lbool upol, bool dvar) {
     }
     return v; }
 
+Var SimpSolver::newSymmAuxVar() {
+    Var v = Solver::newVar(l_Undef, symm_aux_decide);
+
+    frozen    .insert(v, (char)symm_aux_freeze);
+    eliminated.insert(v, (char)false);
+
+    if (use_simplification){
+        n_occ     .insert( mkLit(v), 0);
+        n_occ     .insert(~mkLit(v), 0);
+        occurs    .init  (v);
+        touched   .insert(v, 0);
+        elim_heap .insert(v);
+    }
+    return v; }
 
 void SimpSolver::releaseVar(Lit l)
 {
@@ -747,7 +765,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     // for (i = 0; i < nsupport; i++)
     //   {
         // lbool tempVar;
-        this->newVar();
+        this->newSymmAuxVar();
       // }
     vec<Lit> clause0;
     //Variable IDs start from 0
@@ -780,7 +798,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
           clause1.push(~mkLit(abs(perm[support[i]]) - 1));
         this->addClause_(clause1);
 
-        this->newVar();
+        this->newSymmAuxVar();
 
         int nextVar = this->nVars() - 1;
 
@@ -824,6 +842,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
       }
     //printf("Added shatter SBP clauses\n");
   }
+
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   addShatterSBP(perm.f, perm.dom, perm.domSize);

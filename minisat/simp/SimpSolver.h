@@ -24,8 +24,13 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/mtl/Queue.h"
 #include "minisat/core/Solver.h"
 
+// Symmetry options:
+extern Minisat::StringOption symmetry;
+extern Minisat::BoolOption symm_aux_decide;
+extern Minisat::BoolOption symm_aux_freeze;
 
 namespace Minisat {
+
 
 //=================================================================================================
 
@@ -40,6 +45,7 @@ namespace Minisat {
     // Problem specification:
     //
     Var     newVar    (lbool upol = l_Undef, bool dvar = true);
+    Var     newSymmAuxVar    ();
     void    releaseVar(Lit l);
     bool    addClause (const vec<Lit>& ps);
     bool    addEmptyClause();                // Add the empty clause to the solver.

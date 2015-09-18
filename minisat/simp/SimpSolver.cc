@@ -846,12 +846,71 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     //printf("Added shatter SBP clauses\n");
   }
 
+void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport)
+  {
+    printf("Adding chaining SBP clauses\n");
+    unsigned int i = 0 ;
+    // for (i = 0; i < nsupport; i++)
+    //   {
+        // lbool tempVar;
+        this->newSymmAuxVar();
+      // }
+    vec<Lit> clause0;
+    //Variable IDs start from 0
+
+    if(perm[support[0]] > 0)
+      clause0.push(~mkLit(perm[support[0]] - 1));
+    else
+      clause0.push(mkLit(abs(perm[support[0]]) - 1));
+    clause0.push(~mkLit(support[0]-1));
+    clause0.push(mkLit(this->nVars() - 1));
+    this->addClause_(clause0);
+
+    for (i = 1; i < nsupport; ++i)
+      {
+    	/* again, terminate at phase shift */
+
+    	/* if (p[x] == -x) { */
+    	/* 	clause(-vars, -z, -x, 0); */
+    	/* 	clause(-vars, p[z], -x, 0); */
+    	/* 	break; */
+    	/* } */
+        int thisVar = this->nVars() - 1 ;
+        //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
+        vec<Lit> clause1;
+        clause1.clear();
+        clause1.push(~mkLit(thisVar));
+        clause1.push(~mkLit(support[i]-1));
+        if(perm[support[i]] > 0)
+          clause1.push(mkLit(perm[support[i]] - 1));
+        else
+          clause1.push(~mkLit(abs(perm[support[i]]) - 1));
+        this->addClause_(clause1);
+
+        this->newSymmAuxVar();
+
+        int nextVar = this->nVars() - 1;
+
+        vec<Lit> clause2;
+        clause2.clear();
+        clause2.push(~mkLit(thisVar));
+        if(perm[support[i]] > 0)
+          clause2.push(~mkLit(perm[support[i]] - 1));
+        else
+          clause2.push(mkLit(abs(perm[support[i]]) - 1));
+        clause2.push(~mkLit(support[i]-1));
+        clause2.push(mkLit(nextVar));        
+        this->addClause_(clause2);
+        
+      }
+    printf("Added chaining SBP clauses\n");
+  }
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   if(symm_break_shatter)
     addShatterSBP(perm.f, perm.dom, perm.domSize);
   else if(symm_break_chaining_imp)
-    {;}
+    addChainingSBP(perm.f, perm.dom, perm.domSize);
   else if(symm_break_shatter_eq_table)
     {;}
   else if(symm_break_chaining_imp_eq_table)

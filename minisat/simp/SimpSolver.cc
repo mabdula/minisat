@@ -39,13 +39,13 @@ static IntOption    opt_subsumption_lim  (_cat, "sub-lim",      "Do not check if
 static DoubleOption opt_simp_garbage_frac(_cat, "simp-gc-frac", "The fraction of wasted memory allowed before a garbage collection is triggered during simplification.",  0.5, DoubleRange(0, false, HUGE_VAL, false));
 
 // Symmetry options:
-StringOption symmetry("SYMMETRY", "symm", "Symmetry definitions.");
+StringOption symmetry("SYMMETRY", "symm", "Permutations file.");
 BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry added auxilary variables.", false);
 BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
-BoolOption symm_break_shatter("SYMMETRY", "symm-break-shatter", "Break symmetries via emulating shatter.", false);
-BoolOption symm_break_chaining_imp("SYMMETRY", "symm-break-chaining-imp", "Break symmetries via implication chaining SBPs", false);
-BoolOption symm_break_shatter_eq_table("SYMMETRY", "symm-break-shatter-eq-table", "Break symmetries via emulating shatter with equality table variables.", false);
-BoolOption symm_break_chaining_imp_eq_table("SYMMETRY", "symm-break-shatter-imp-eq-table", "Break symmetries via implication chaining SBPs with equality table variables.", false);
+BoolOption symm_break_shatter("SYMMETRY", "symm-shatter", "Break symmetries via emulating shatter.", false);
+BoolOption symm_break_chaining_imp("SYMMETRY", "symm-chain", "Break symmetries via implication chaining SBPs", false);
+BoolOption symm_break_shatter_eq_table("SYMMETRY", "symm-shatter-eqt", "Break symmetries via emulating shatter with equality table variables.", false);
+BoolOption symm_break_chaining_imp_eq_table("SYMMETRY", "symm-chain-eqt", "Break symmetries via implication chaining SBPs with equality table variables.", false);
 
 //=================================================================================================
 // Constructor/Destructor:

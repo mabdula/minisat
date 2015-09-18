@@ -855,16 +855,26 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         // lbool tempVar;
         this->newSymmAuxVar();
       // }
-    vec<Lit> clause0;
+    vec<Lit> clause00;
     //Variable IDs start from 0
-
+    clause00.push(~mkLit(support[0]-1));
     if(perm[support[0]] > 0)
-      clause0.push(~mkLit(perm[support[0]] - 1));
+      clause00.push(mkLit(perm[support[0]] - 1));
     else
-      clause0.push(mkLit(abs(perm[support[0]]) - 1));
-    clause0.push(~mkLit(support[0]-1));
-    clause0.push(mkLit(this->nVars() - 1));
-    this->addClause_(clause0);
+      clause00.push(~mkLit(abs(perm[support[0]]) - 1));
+
+    vec<Lit> clause01;
+    clause01.push(~mkLit(support[0]-1));
+    clause01.push(mkLit(this->nVars() - 1));    
+    this->addClause_(clause01);
+
+    vec<Lit> clause02;
+    if(perm[support[0]] > 0)
+      clause02.push(mkLit(perm[support[0]] - 1));
+    else
+      clause02.push(~mkLit(abs(perm[support[0]]) - 1));
+    clause02.push(mkLit(this->nVars() - 1));    
+    this->addClause_(clause02);
 
     for (i = 1; i < nsupport; ++i)
       {
@@ -895,11 +905,17 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         clause2.clear();
         clause2.push(~mkLit(thisVar));
         if(perm[support[i]] > 0)
-          clause2.push(~mkLit(perm[support[i]] - 1));
+          clause2.push(mkLit(perm[support[i]] - 1));
         else
-          clause2.push(mkLit(abs(perm[support[i]]) - 1));
-        clause2.push(~mkLit(support[i]-1));
+          clause2.push(~mkLit(abs(perm[support[i]]) - 1));
         clause2.push(mkLit(nextVar));        
+        this->addClause_(clause2);
+
+        vec<Lit> clause3;
+        clause3.clear();
+        clause3.push(~mkLit(thisVar));
+        clause3.push(~mkLit(support[i]-1));
+        clause3.push(mkLit(nextVar));        
         this->addClause_(clause2);
         
       }

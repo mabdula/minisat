@@ -852,8 +852,9 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     // for (i = 0; i < nsupport; i++)
     //   {
         // lbool tempVar;
-        this->newSymmAuxVar();
+    this->newSymmAuxVar();
       // }
+    this->addEq(support[0], perm[support[0]]);
     vec<Lit> clause00;
     //Variable IDs start from 0
     clause00.push(~mkLit(support[0]-1));
@@ -862,9 +863,11 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     else
       clause00.push(~mkLit(abs(perm[support[0]]) - 1));
 
+
+    // TODO: clause01 and clause02 this should be one 3-clause!!
     vec<Lit> clause01;
     clause01.push(~mkLit(support[0]-1));
-    clause01.push(mkLit(this->nVars() - 1));    
+    clause01.push(mkLit(this->nVars() - 1));
     this->addClause_(clause01);
 
     vec<Lit> clause02;
@@ -872,11 +875,12 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
       clause02.push(mkLit(perm[support[0]] - 1));
     else
       clause02.push(~mkLit(abs(perm[support[0]]) - 1));
-    clause02.push(mkLit(this->nVars() - 1));    
+    clause02.push(mkLit(this->nVars() - 1));
     this->addClause_(clause02);
 
     for (i = 1; i < nsupport; ++i)
       {
+        this->addEq(support[i], perm[support[i]]);
     	/* again, terminate at phase shift */
 
     	/* if (p[x] == -x) { */

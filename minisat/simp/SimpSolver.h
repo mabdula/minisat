@@ -28,6 +28,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 // Symmetry options:
 extern Minisat::StringOption symmetry;
 extern Minisat::BoolOption symm_eq_table;
+extern Minisat::BoolOption symm_eq_table;
 /* extern Minisat::BoolOption symm_aux_decide; */
 /* extern Minisat::BoolOption symm_aux_freeze; */
 /* extern Minisat::BoolOption symm_break_shatter; */

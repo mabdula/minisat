@@ -33,6 +33,11 @@ namespace Minisat {
                  unsigned int domSize;//The number of variables that are not mapped to themselves
                  } Permutation;
 
+  typedef struct{int l1, l2; // The two literals involved in the equality
+                 void* Succ; // The different equalities that succeed the current one in different permuations
+                 void* Pred; // The different equalities that precede the current one in different permuations
+                 } Eq;
+
 //=================================================================================================
 // SYMMETRY Parser:
 

@@ -44,8 +44,7 @@ BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry ad
 BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
 BoolOption symm_break_shatter("SYMMETRY", "symm-shatter", "Break symmetries via emulating shatter.", false);
 BoolOption symm_break_chaining_imp("SYMMETRY", "symm-chain", "Break symmetries via implication chaining SBPs", false);
-BoolOption symm_break_shatter_eq_table("SYMMETRY", "symm-shatter-eqt", "Break symmetries via emulating shatter with equality table variables.", false);
-BoolOption symm_break_chaining_imp_eq_table("SYMMETRY", "symm-chain-eqt", "Break symmetries via implication chaining SBPs with equality table variables.", false);
+BoolOption symm_eq_table("SYMMETRY", "symm-eq-table", "Use equality table auxiliary variables", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -848,7 +847,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
 
 void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport)
   {
-    printf("Adding chaining SBP clauses\n");
+    //printf("Adding chaining SBP clauses\n");
     unsigned int i = 0 ;
     // for (i = 0; i < nsupport; i++)
     //   {
@@ -919,18 +918,16 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         this->addClause_(clause2);
         
       }
-    printf("Added chaining SBP clauses\n");
+    //printf("Added chaining SBP clauses\n");
   }
+
+
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   if(symm_break_shatter)
     addShatterSBP(perm.f, perm.dom, perm.domSize);
   else if(symm_break_chaining_imp)
     addChainingSBP(perm.f, perm.dom, perm.domSize);
-  else if(symm_break_shatter_eq_table)
-    {;}
-  else if(symm_break_chaining_imp_eq_table)
-    {;}
   return ok;
 }
 

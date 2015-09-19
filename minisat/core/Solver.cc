@@ -783,6 +783,7 @@ lbool Solver::search(int nof_conflicts)
                     // Model found:
                     return l_True;
             }
+            //TODO: assignement happens here
 
             // Increase decision level and enqueue 'next'
             newDecisionLevel();

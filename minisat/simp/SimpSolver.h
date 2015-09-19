@@ -26,6 +26,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 // Symmetry options:
 extern Minisat::StringOption symmetry;
+extern Minisat::BoolOption symm_eq_table;
 /* extern Minisat::BoolOption symm_aux_decide; */
 /* extern Minisat::BoolOption symm_aux_freeze; */
 /* extern Minisat::BoolOption symm_break_shatter; */
@@ -66,6 +67,9 @@ namespace Minisat {
     bool addSymmetryGenerator(Minisat::Permutation& perm);
     void addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
     void addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport);
+    unsigned int nSymmetries;
+    Permutation* symmetries;
+    Eq* eqs;
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

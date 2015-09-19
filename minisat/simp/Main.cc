@@ -109,7 +109,9 @@ int main(int argc, char** argv)
         if (S.verbosity > 0)
             printf("|  Parse time:           %12.2f s                                       |\n", parsed_time - initial_time);
 
-        // Parse the symetries
+        // Treat the symetries
+        if(symm_eq_table)
+          S.eqs = (Eq*) malloc(S.nVars() * sizeof(void*));
         double symmetry_parsed_time = cpuTime();
         if (symmetry != NULL) {
           gzFile symm_in = gzopen(symmetry, "rb");

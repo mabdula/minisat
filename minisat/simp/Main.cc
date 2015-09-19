@@ -111,7 +111,8 @@ int main(int argc, char** argv)
 
         // Treat the symetries
         if(symm_eq_table)
-          S.eqs = (Eq*) malloc(S.nVars() * sizeof(void*));
+          S.eqs = (PARRAY*) malloc(S.nVars() * sizeof(void*));
+
         double symmetry_parsed_time = cpuTime();
         if (symmetry != NULL) {
           gzFile symm_in = gzopen(symmetry, "rb");

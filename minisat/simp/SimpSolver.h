@@ -67,9 +67,10 @@ namespace Minisat {
     bool addSymmetryGenerator(Minisat::Permutation& perm);
     void addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
     void addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport);
+    void addEq(int l1, int l2);
     unsigned int nSymmetries;
     Permutation* symmetries;
-    Eq* eqs;
+    PARRAY* eqs;
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

@@ -922,6 +922,11 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
   }
 
 
+void SimpSolver::addEq(int l1, int l2)
+  {
+    printf("Adding equality\n");
+    
+  }
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   if(symm_break_shatter)

@@ -168,9 +168,9 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 bool SimpSolver::addClause_(vec<Lit>& ps)
 {
-    for (int i = 0; i < ps.size(); i++)
-      printf("%d ", ps[i].x);
-    printf("\n");
+    // for (int i = 0; i < ps.size(); i++)
+    //   printf("%d ", ps[i].x);
+    // printf("\n");
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
         assert(!isEliminated(var(ps[i])));
@@ -771,6 +771,8 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
       // }
     vec<Lit> clause0;
     //Variable IDs start from 0
+    if(symm_eq_table)
+      this->addEq(support[0], perm[support[0]]);
 
     clause0.push(~mkLit(support[0]-1));
     if(perm[support[0]] > 0)
@@ -780,6 +782,9 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     this->addClause_(clause0);
     for (i = 1; i < nsupport; ++i)
       {
+        if(symm_eq_table)
+          this->addEq(support[i], perm[support[i]]);
+
     	/* again, terminate at phase shift */
 
     	/* if (p[x] == -x) { */
@@ -854,7 +859,9 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         // lbool tempVar;
     this->newSymmAuxVar();
       // }
-    this->addEq(support[0], perm[support[0]]);
+    if(symm_eq_table)
+      this->addEq(support[0], perm[support[0]]);
+
     vec<Lit> clause00;
     //Variable IDs start from 0
     clause00.push(~mkLit(support[0]-1));
@@ -880,7 +887,8 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
 
     for (i = 1; i < nsupport; ++i)
       {
-        this->addEq(support[i], perm[support[i]]);
+        if(symm_eq_table)
+          this->addEq(support[i], perm[support[i]]);
     	/* again, terminate at phase shift */
 
     	/* if (p[x] == -x) { */
@@ -958,7 +966,7 @@ unsigned int NumEqs = 0;
 
 void SimpSolver::addEq(long int l1, long int l2)
   {
-    printf("Adding equality\n");
+    //printf("Adding equality\n");
     NumNaiveEqs++;
     int eq_idx1 = paContains(this->eqs[abs(l1)], intAbsEq, (void*) l2);
     int eq_idx2 = paContains(this->eqs[abs(l2)], intAbsEq, (void*) l1);

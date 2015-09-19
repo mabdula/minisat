@@ -106,7 +106,7 @@ template<class B>
 
 template<class B, class Solver>
 static void parse_SYMM_main(B& in, Solver& S) {
-    printf("Starting to parse perm\r\n");
+    //printf("Starting to parse perm\r\n");
     /* Permutation* perm2 = new Permutation; */
     Permutation perm;
     perm.f = (int*)malloc(sizeof(int) * (S.nVars() + 1));
@@ -120,7 +120,7 @@ static void parse_SYMM_main(B& in, Solver& S) {
             skipLine(in);
         } else{
             cnt++;
-            printf("Parsing perm\r\n");
+            //printf("Parsing perm\r\n");
             readGenerator(in, &perm);
             S.addSymmetryGenerator(perm); }
     }

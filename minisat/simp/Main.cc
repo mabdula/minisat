@@ -119,8 +119,8 @@ int main(int argc, char** argv)
           parse_SYMM(symm_in, S);
           gzclose(symm_in);
           if (S.verbosity > 0){
-            printf("|  Number of variables:  %12d                                         |\n", S.nVars());
-            printf("|  Number of clauses:    %12d                                         |\n", S.nClauses()); }
+            printf("|  Number of variables after adding SBPs:  %12d                                         |\n", S.nVars());
+            printf("|  Number of clauses after adding SBPs:    %12d                                         |\n", S.nClauses()); }
           if (S.verbosity > 0)
             printf("|  Symmetry parse time:  %12.2f s                                       |\n", symmetry_parsed_time - parsed_time);
           extern unsigned int NumEqs;

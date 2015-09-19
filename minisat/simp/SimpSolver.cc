@@ -921,11 +921,76 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     //printf("Added chaining SBP clauses\n");
   }
 
+void SimpSolver::initVarEqs()
+  {
+    this->eqs = (PARRAY*) malloc((this->nVars() + 1) * sizeof(int*) );
+    int i = 0 ;
+    for( i = 0 ; i <= this->nVars() ; i ++)
+      {
+        this->eqs[i] = paMake(5,5);
+        if (this->eqs[i] == NULL)
+          {
+            printf("Could not init var_eqs, exiting!!\r\n");
+            exit(-1);
+          }
+      }
+  }
 
-void SimpSolver::addEq(int l1, int l2)
+void SimpSolver::cleanVarEqs()
+  {
+    int i = 0 ;
+    for( i = 0 ; i <= this->nVars() ; i ++)
+      {
+        paClose(this->eqs[i]);
+      }
+    free(this->eqs);
+  }
+
+
+unsigned int NumNaiveEqs = 0;
+unsigned int NumEqs = 0;
+
+
+
+void SimpSolver::addEq(long int l1, long int l2)
   {
     printf("Adding equality\n");
-    
+    NumNaiveEqs++;
+    int eq_idx1 = paContains(this->eqs[abs(l1)], intAbsEq, (void*) l2);
+    int eq_idx2 = paContains(this->eqs[abs(l2)], intAbsEq, (void*) l1);
+    if((eq_idx1 > 0 && eq_idx2 < 0) || (eq_idx2 > 0 && eq_idx1 < 0))
+      {
+        printf("Inconsistent eqs table: 1, exiting!!\n");
+        exit(-1);
+      }
+    if(((long int) paElementAt(this->eqs[abs(l1)], eq_idx1) > 0 &&(long int) paElementAt(this->eqs[abs(l2)], eq_idx2) < 0)
+       ||((long int) paElementAt(this->eqs[abs(l1)], eq_idx1) < 0 && (long int) paElementAt(this->eqs[abs(l2)], eq_idx2) > 0))
+      {
+        printf("Inconsistent eqs table: 2, exiting!!\n");
+        exit(-1);
+      }
+    if(eq_idx1 >= 0)
+      {
+        return;
+      }
+    NumEqs++;
+    /* printf("Adding %ld %ld\n", l1, l2); */
+    /* printf("eq_idx1 = %d eq_idx2 = %d\n", eq_idx1, eq_idx2); */
+    if(l1 < 0 && l2 > 0)
+      {
+        paAdd(this->eqs[-l1], (void*) -l2);
+        paAdd(this->eqs[l2], (void*) l1);
+      }
+    else if(l1 > 0 && l2 < 0)
+      {
+        paAdd(this->eqs[l1], (void*) l2);
+        paAdd(this->eqs[-l2], (void*) -l1);
+      }
+    else
+      {
+        paAdd(this->eqs[l1], (void*) l2);
+        paAdd(this->eqs[l2], (void*) l1);
+      }
   }
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {

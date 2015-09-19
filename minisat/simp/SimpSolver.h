@@ -23,6 +23,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include "minisat/mtl/Queue.h"
 #include "minisat/core/Solver.h"
+#include "libds-2.2/ds.h"
 
 // Symmetry options:
 extern Minisat::StringOption symmetry;
@@ -67,10 +68,12 @@ namespace Minisat {
     bool addSymmetryGenerator(Minisat::Permutation& perm);
     void addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
     void addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport);
-    void addEq(int l1, int l2);
+    void addEq(long int l1, long int l2);
     unsigned int nSymmetries;
     Permutation* symmetries;
     PARRAY* eqs;
+    void initVarEqs();
+    void cleanVarEqs();
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

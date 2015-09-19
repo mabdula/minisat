@@ -281,3 +281,8 @@ paPrev(PARRAY pa)
 
     return parray->elements[--parray->curr];
 }
+
+int intAbsEq(void* i1, void* i2)
+  {
+    return (abs((long int)i1) == abs((long int)i2));
+  }

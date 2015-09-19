@@ -278,4 +278,5 @@ extern void * stkPeek(STACK);
 extern int stkSize(STACK);
 extern int stkEmpty(STACK);
 extern unsigned hash1(unsigned char *n);
+extern int intAbsEq(void* i1, void* i2);
 # endif /* ! _LIBDS_H_ */

@@ -33,12 +33,14 @@ namespace Minisat {
                  unsigned int domSize;//The number of variables that are not mapped to themselves
                  } Permutation;
 
-  typedef struct{unsigned int v;
-                 int l; // The two literals involved in the equality
+  // Astructure used to represent the mapping v->l
+  typedef struct{unsigned int v; 
+                 int l;
                  unsigned char added;
                  unsigned char defAdded;
                  void* succ; // The different equalities that succeed the current one in different permuations
                  void* pred; // The different equalities that precede the current one in different permuations
+                 unsigned int cnfVarID; // The cnf aux variable (it will be represented with two vars whose IDs will be consecutive)
                  } Eq;
 
 //=================================================================================================

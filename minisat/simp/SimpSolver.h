@@ -76,7 +76,8 @@ namespace Minisat {
     PARRAY* eqs;
     void initVarEqs();
     void cleanVarEqs();
-   bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
+    bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
+    unsigned int addEqAuxVars(unsigned int v, int l);
 
     // Variable mode:
     // 

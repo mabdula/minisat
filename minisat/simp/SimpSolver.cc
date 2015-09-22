@@ -847,6 +847,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     //printf("Added shatter SBP clauses\n");
   }
 
+
 void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport)
   {
     //printf("Adding chaining SBP clauses\n");
@@ -854,74 +855,97 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     // for (i = 0; i < nsupport; i++)
     //   {
         // lbool tempVar;
-    this->newSymmAuxVar();
+    int var1 = this->newSymmAuxVar() - 1;
       // }
-
-    vec<Lit> clause00;
     //Variable IDs start from 0
-    clause00.push(~mkLit(support[0]-1));
-    if(perm[support[0]] > 0)
-      clause00.push(mkLit(perm[support[0]] - 1));
+    if(symm_eq_aux)
+      {
+        vec<Lit> clause00;
+        unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
+        clause00.push(mkLit(eqAuxVarID));
+        vec<Lit> clause01;
+        clause01.push(~mkLit(eqAuxVarID + 1));
+        clause01.push(mkLit(var1));
+      }
     else
-      clause00.push(~mkLit(abs(perm[support[0]]) - 1));
-
-
+      {
+        vec<Lit> clause00;
+        clause00.push(~mkLit(support[0]-1));
+        if(perm[support[0]] > 0)
+          clause00.push(mkLit(perm[support[0]] - 1));
+        else
+         clause00.push(~mkLit(abs(perm[support[0]]) - 1));
+         vec<Lit> clause01;
+        clause01.push(~mkLit(support[0]-1));
+        clause01.push(mkLit(this->nVars() - 1));
+        this->addClause_(clause01);
+        vec<Lit> clause02;
+        if(perm[support[0]] > 0)
+          clause02.push(mkLit(perm[support[0]] - 1));
+        else
+          clause02.push(~mkLit(abs(perm[support[0]]) - 1));
+        clause02.push(mkLit(this->nVars() - 1));
+        this->addClause_(clause02); 
+      }
     // TODO: clause01 and clause02 this should be one 3-clause!!
-    vec<Lit> clause01;
-    clause01.push(~mkLit(support[0]-1));
-    clause01.push(mkLit(this->nVars() - 1));
-    this->addClause_(clause01);
-
-    vec<Lit> clause02;
-    if(perm[support[0]] > 0)
-      clause02.push(mkLit(perm[support[0]] - 1));
-    else
-      clause02.push(~mkLit(abs(perm[support[0]]) - 1));
-    clause02.push(mkLit(this->nVars() - 1));
-    this->addClause_(clause02);
 
     for (i = 1; i < nsupport; ++i)
       {
     	/* again, terminate at phase shift */
-
     	/* if (p[x] == -x) { */
     	/* 	clause(-vars, -z, -x, 0); */
     	/* 	clause(-vars, p[z], -x, 0); */
     	/* 	break; */
     	/* } */
+
         int thisVar = this->nVars() - 1 ;
+        if(symm_eq_aux)
+          {
+            vec<Lit> clause1;
+            unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
+            clause1.push(~mkLit(thisVar));
+            clause1.push(mkLit(eqAuxVarID));
+            this->newSymmAuxVar();
+            int nextVar = this->nVars() - 1;
+            vec<Lit> clause2;
+            clause1.push(~mkLit(thisVar));
+            clause2.push(~mkLit(eqAuxVarID + 1));
+            clause2.push(mkLit(nextVar));
+          }
         //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
-        vec<Lit> clause1;
-        clause1.clear();
-        clause1.push(~mkLit(thisVar));
-        clause1.push(~mkLit(support[i]-1));
-        if(perm[support[i]] > 0)
-          clause1.push(mkLit(perm[support[i]] - 1));
         else
-          clause1.push(~mkLit(abs(perm[support[i]]) - 1));
-        this->addClause_(clause1);
+          {
+            vec<Lit> clause1;
+            clause1.clear();
+            clause1.push(~mkLit(thisVar));
+            clause1.push(~mkLit(support[i]-1));
+            if(perm[support[i]] > 0)
+              clause1.push(mkLit(perm[support[i]] - 1)); 
+            else
+              clause1.push(~mkLit(abs(perm[support[i]]) - 1));
+            this->addClause_(clause1);
 
-        this->newSymmAuxVar();
+            this->newSymmAuxVar();
+            int nextVar = this->nVars() - 1;
+            vec<Lit> clause2;
+            clause2.clear();
+            clause2.push(~mkLit(thisVar));
+            if(perm[support[i]] > 0)
+              clause2.push(mkLit(perm[support[i]] - 1));
+            else
+              clause2.push(~mkLit(abs(perm[support[i]]) - 1));
+            clause2.push(mkLit(nextVar));        
+            this->addClause_(clause2);
 
-        int nextVar = this->nVars() - 1;
+            vec<Lit> clause3;
+            clause3.clear();
+            clause3.push(~mkLit(thisVar));
+            clause3.push(~mkLit(support[i]-1));
+            clause3.push(mkLit(nextVar));        
+            //TODO: BUG BUG!!!! clause2->clause3
+            this->addClause_(clause2);
+          }
 
-        vec<Lit> clause2;
-        clause2.clear();
-        clause2.push(~mkLit(thisVar));
-        if(perm[support[i]] > 0)
-          clause2.push(mkLit(perm[support[i]] - 1));
-        else
-          clause2.push(~mkLit(abs(perm[support[i]]) - 1));
-        clause2.push(mkLit(nextVar));        
-        this->addClause_(clause2);
-
-        vec<Lit> clause3;
-        clause3.clear();
-        clause3.push(~mkLit(thisVar));
-        clause3.push(~mkLit(support[i]-1));
-        clause3.push(mkLit(nextVar));        
-        this->addClause_(clause2);
-        
       }
     //printf("Added chaining SBP clauses\n");
   }
@@ -1029,8 +1053,58 @@ bool SimpSolver::constructEqTable(int* perm, unsigned int* support, unsigned int
  {
    unsigned int i = 0;
    for( i = 0 ; i < nsupport ; i++)
-      this->addEq(support[i], perm[support[i]]);   
+     this->addEq(support[i], perm[support[i]]);   
  }
+
+// Add the definitions of the auxiliary variables representing the maping v->l to the formula and return the IDs of the corresponding cnf vars
+unsigned int SimpSolver::addEqAuxVars(unsigned int v, int l)
+  {
+    Minisat::Eq* tempEq = (Minisat::Eq*)malloc(sizeof(Eq));
+    tempEq -> added = 0;
+    tempEq -> defAdded = 0;
+    tempEq -> succ = NULL;
+    tempEq -> pred = NULL;
+    tempEq -> v = v;
+    tempEq -> l = l;
+    int eq_idx = paContains(this->eqs[v], eqCmp, (void*) tempEq);
+    if (eq_idx < 0)
+      {
+        printf("Problem with eq table, exiting!!\n");
+        exit(-1);
+      }
+    free(tempEq);
+    tempEq = (Minisat::Eq*)paElementAt(this->eqs[v], eq_idx);
+    // Adding the definitions of the aux var if they are not there already
+    if(!tempEq->defAdded)
+      {
+        tempEq->cnfVarID = this->nVars();        
+        this->newSymmAuxVar();
+        vec<Lit> var1DefClause;
+        var1DefClause.push(~mkLit(tempEq->cnfVarID));
+        var1DefClause.push(~mkLit(v - 1));
+        if(l > 0)
+          var1DefClause.push(mkLit(l - 1));
+        else
+          var1DefClause.push(~mkLit(abs(l) - 1));
+        this-> addClause_(var1DefClause);
+
+        this->newSymmAuxVar();
+        vec<Lit> var2defClause1;
+        if(l > 0)
+          var2defClause1.push(mkLit(l - 1));
+        else
+          var2defClause1.push(~mkLit(abs(l) - 1));
+        var2defClause1.push(mkLit(tempEq->cnfVarID + 1));
+        this->addClause_(var2defClause1);
+
+        vec<Lit> var2defClause2;
+        var2defClause2.push(~mkLit(v - 1));
+        var2defClause2.push(mkLit(tempEq->cnfVarID + 1));
+        this->addClause_(var2defClause2);
+        tempEq->defAdded = 1;
+      }
+    return (tempEq->cnfVarID);
+  }
 
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   if(symm_eq_aux || symm_dynamic)

@@ -906,7 +906,7 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         if(symm_eq_aux)
           {
             vec<Lit> clause1;
-            unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
+            unsigned int eqAuxVarID = this->addEqAuxVars(support[i], perm[support[i]]);
             clause1.push(~mkLit(thisVar));
             clause1.push(mkLit(eqAuxVarID));
             this->addClause_(clause1);

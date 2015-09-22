@@ -169,9 +169,9 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 bool SimpSolver::addClause_(vec<Lit>& ps)
 {
-    // for (int i = 0; i < ps.size(); i++)
-    //   printf("%d ", ps[i].x);
-    // printf("\n");
+    for (int i = 0; i < ps.size(); i++)
+      printf("%d ", ps[i].x);
+    printf("\n");
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
         assert(!isEliminated(var(ps[i])));
@@ -863,9 +863,11 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         vec<Lit> clause00;
         unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
         clause00.push(mkLit(eqAuxVarID));
+        this->addClause_(clause00);
         vec<Lit> clause01;
         clause01.push(~mkLit(eqAuxVarID + 1));
         clause01.push(mkLit(var1));
+        this->addClause_(clause01);
       }
     else
       {
@@ -905,12 +907,14 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
             unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
             clause1.push(~mkLit(thisVar));
             clause1.push(mkLit(eqAuxVarID));
+            this->addClause_(clause1);
             this->newSymmAuxVar();
             int nextVar = this->nVars() - 1;
             vec<Lit> clause2;
             clause2.push(~mkLit(thisVar));
             clause2.push(~mkLit(eqAuxVarID + 1));
             clause2.push(mkLit(nextVar));
+            this->addClause_(clause2);
           }
         //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
         else
@@ -1077,6 +1081,7 @@ unsigned int SimpSolver::addEqAuxVars(unsigned int v, int l)
     // Adding the definitions of the aux var if they are not there already
     if(!tempEq->defAdded)
       {
+        printf("Adding eq aux vars and their defining clauses\n");
         tempEq->cnfVarID = this->nVars();        
         this->newSymmAuxVar();
         vec<Lit> var1DefClause;

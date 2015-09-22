@@ -908,7 +908,7 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
             this->newSymmAuxVar();
             int nextVar = this->nVars() - 1;
             vec<Lit> clause2;
-            clause1.push(~mkLit(thisVar));
+            clause2.push(~mkLit(thisVar));
             clause2.push(~mkLit(eqAuxVarID + 1));
             clause2.push(mkLit(nextVar));
           }

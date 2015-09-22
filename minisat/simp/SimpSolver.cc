@@ -768,17 +768,18 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     // for (i = 0; i < nsupport; i++)
     //   {
         // lbool tempVar;
-        this->newSymmAuxVar();
+    this->newSymmAuxVar();
+    int var1 = this->nVars() - 1;
       // }
     vec<Lit> clause0;
     //Variable IDs start from 0
-
     clause0.push(~mkLit(support[0]-1));
     if(perm[support[0]] > 0)
       clause0.push( mkLit(perm[support[0]] - 1));
     else
       clause0.push(~mkLit(abs(perm[support[0]]) - 1));
     this->addClause_(clause0);
+    int thisVar = var1;
     for (i = 1; i < nsupport; ++i)
       {
 
@@ -789,7 +790,6 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     	/* 	clause(-vars, p[z], -x, 0); */
     	/* 	break; */
     	/* } */
-        int thisVar = this->nVars() - 1 ;
         //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
         vec<Lit> clause1;
         clause1.clear();
@@ -803,7 +803,6 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
         this->addClause_(clause1);
 
         this->newSymmAuxVar();
-
         int nextVar = this->nVars() - 1;
 
         vec<Lit> clause2;
@@ -816,33 +815,27 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
         vec<Lit> clause3;
         clause3.clear();
         clause3.push(~mkLit(thisVar));
-
         if(perm[support[i-1]] > 0)
           clause3.push( mkLit(perm[support[i-1]] - 1));
         else
           clause3.push(~mkLit(abs(perm[support[i-1]]) - 1));
-
         clause3.push(~mkLit((int)support[i] - 1));
-
         if(perm[support[i]] > 0)
           clause3.push( mkLit(perm[support[i]] - 1));
         else
           clause3.push(~mkLit(abs(perm[support[i]]) - 1));
-
-
         this->addClause_(clause3);
 
         vec<Lit> clause4;
         clause4.clear();
         clause4.push(~mkLit(thisVar));
-
         if(perm[support[i]] > 0)
           clause4.push( mkLit(perm[support[i - 1]] - 1));
         else
           clause4.push(~mkLit(abs(perm[support[i - 1]]) - 1));
-
         clause4.push( mkLit(nextVar));
         this->addClause_(clause4);
+        thisVar = this->nVars() - 1 ;
       }
     //printf("Added shatter SBP clauses\n");
   }

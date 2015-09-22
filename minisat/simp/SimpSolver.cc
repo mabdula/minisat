@@ -855,7 +855,8 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     // for (i = 0; i < nsupport; i++)
     //   {
         // lbool tempVar;
-    int var1 = this->newSymmAuxVar() - 1;
+    this->newSymmAuxVar();
+    int var1 = this->nVars() - 1;
       // }
     //Variable IDs start from 0
     if(symm_eq_aux)
@@ -891,6 +892,7 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         this->addClause_(clause02); 
       }
     // TODO: clause01 and clause02 this should be one 3-clause!!
+    int thisVar = var1;
 
     for (i = 1; i < nsupport; ++i)
       {
@@ -901,7 +903,6 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
     	/* 	break; */
     	/* } */
 
-        int thisVar = this->nVars() - 1 ;
         if(symm_eq_aux)
           {
             vec<Lit> clause1;
@@ -950,7 +951,7 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
             //TODO: BUG BUG!!!! clause2->clause3
             this->addClause_(clause3);
           }
-
+        thisVar = this->nVars() - 1 ;
       }
     //printf("Added chaining SBP clauses\n");
   }

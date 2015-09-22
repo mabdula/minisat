@@ -1084,8 +1084,8 @@ unsigned int SimpSolver::addEqAuxVars(unsigned int v, int l)
     if(!tempEq->defAdded)
       {
         printf("Adding eq aux vars and their defining clauses\n");
-        tempEq->cnfVarID = this->nVars();        
         this->newSymmAuxVar();
+        tempEq->cnfVarID = this->nVars() - 1;
         vec<Lit> var1DefClause;
         var1DefClause.push(~mkLit(tempEq->cnfVarID));
         var1DefClause.push(~mkLit(v - 1));

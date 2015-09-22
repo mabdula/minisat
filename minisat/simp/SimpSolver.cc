@@ -877,7 +877,8 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
           clause00.push(mkLit(perm[support[0]] - 1));
         else
          clause00.push(~mkLit(abs(perm[support[0]]) - 1));
-         vec<Lit> clause01;
+        this->addClause_(clause00);
+        vec<Lit> clause01;
         clause01.push(~mkLit(support[0]-1));
         clause01.push(mkLit(this->nVars() - 1));
         this->addClause_(clause01);
@@ -947,7 +948,7 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
             clause3.push(~mkLit(support[i]-1));
             clause3.push(mkLit(nextVar));        
             //TODO: BUG BUG!!!! clause2->clause3
-            this->addClause_(clause2);
+            this->addClause_(clause3);
           }
 
       }

@@ -169,9 +169,9 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 bool SimpSolver::addClause_(vec<Lit>& ps)
 {
-    for (int i = 0; i < ps.size(); i++)
-      printf("%d ", ps[i].x);
-    printf("\n");
+    // for (int i = 0; i < ps.size(); i++)
+    //   printf("%d ", ps[i].x);
+    // printf("\n");
 #ifndef NDEBUG
     for (int i = 0; i < ps.size(); i++)
         assert(!isEliminated(var(ps[i])));
@@ -817,7 +817,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
           {
             unsigned int prevEqAuxVarID = this->addEqAuxVars(support[i-1], perm[support[i-1]]);
             unsigned int currentEqAuxVarID = this->addEqAuxVars(support[i], perm[support[i]]);
-            printf("debug: %d %d\n", thisVar, prevEqAuxVarID + 1);
+            //printf("debug: %d %d\n", thisVar, prevEqAuxVarID + 1);
             vec<Lit> clause1;
             clause1.push(~mkLit(thisVar));
             clause1.push(~mkLit(prevEqAuxVarID + 1));

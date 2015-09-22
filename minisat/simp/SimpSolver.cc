@@ -772,18 +772,31 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     int var1 = this->nVars() - 1;
       // }
 
-    vec<Lit> clause0;
-    //Variable IDs start from 0
-    clause0.push(~mkLit(support[0]-1));
-    if(perm[support[0]] > 0)
-      clause0.push( mkLit(perm[support[0]] - 1));
+    if(symm_eq_aux)
+      {
+        unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
+        vec<Lit> clause0;
+        clause0.push(mkLit(eqAuxVarID));
+        this->addClause_(clause0);
+        vec<Lit> clause1;
+        clause1.push(mkLit(var1));
+        this->addClause_(clause1);        
+      }
     else
-      clause0.push(~mkLit(abs(perm[support[0]]) - 1));
-    this->addClause_(clause0);
-    vec<Lit> clause1;
-    //Variable IDs start from 0
-    clause1.push(mkLit(var1));
-    this->addClause_(clause1);
+      {
+        vec<Lit> clause0;
+        //Variable IDs start from 0
+        clause0.push(~mkLit(support[0]-1));
+        if(perm[support[0]] > 0)
+          clause0.push( mkLit(perm[support[0]] - 1));
+        else
+          clause0.push(~mkLit(abs(perm[support[0]]) - 1));
+        this->addClause_(clause0);
+        vec<Lit> clause1;
+        //Variable IDs start from 0
+        clause1.push(mkLit(var1));
+        this->addClause_(clause1);
+      }
 
     int thisVar = var1;
     for (i = 1; i < nsupport; ++i)
@@ -797,51 +810,72 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     	/* 	break; */
     	/* } */
         //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
-        vec<Lit> clause1;
-        clause1.clear();
-        clause1.push(~mkLit(thisVar));
-        clause1.push(~mkLit((int)support[i-1]-1));
-        clause1.push(~mkLit((int)(support[i]-1)));
-        if(perm[support[i]] > 0)
-          clause1.push( mkLit(perm[support[i]] - 1));
-        else
-          clause1.push(~mkLit(abs(perm[support[i]]) - 1));
-        this->addClause_(clause1);
-
         this->newSymmAuxVar();
         int nextVar = this->nVars() - 1;
 
-        vec<Lit> clause2;
-        clause2.clear();
-        clause2.push(~mkLit(thisVar));
-        clause2.push(~mkLit((int)support[i-1]-1));
-        clause2.push( mkLit(nextVar));
-        this->addClause_(clause2);
-        
-        vec<Lit> clause3;
-        clause3.clear();
-        clause3.push(~mkLit(thisVar));
-        if(perm[support[i-1]] > 0)
-          clause3.push( mkLit(perm[support[i-1]] - 1));
+        if(symm_eq_aux)
+          {
+            unsigned int prevEqAuxVarID = this->addEqAuxVars(support[i-1], perm[support[i-1]]);
+            unsigned int currentEqAuxVarID = this->addEqAuxVars(support[i], perm[support[i]]);
+            printf("debug: %d %d\n", thisVar, prevEqAuxVarID + 1);
+            vec<Lit> clause1;
+            clause1.push(~mkLit(thisVar));
+            clause1.push(~mkLit(prevEqAuxVarID + 1));
+            clause1.push(mkLit(currentEqAuxVarID));
+            this->addClause_(clause1);
+            vec<Lit> clause2;
+            clause2.push(~mkLit(thisVar));
+            clause2.push(~mkLit(prevEqAuxVarID + 1));
+            clause2.push(mkLit(nextVar));
+            this->addClause_(clause2);
+            
+          }
         else
-          clause3.push(~mkLit(abs(perm[support[i-1]]) - 1));
-        clause3.push(~mkLit((int)support[i] - 1));
-        if(perm[support[i]] > 0)
-          clause3.push( mkLit(perm[support[i]] - 1));
-        else
-          clause3.push(~mkLit(abs(perm[support[i]]) - 1));
-        this->addClause_(clause3);
+          {
+            vec<Lit> clause1;
+            clause1.clear();
+            clause1.push(~mkLit(thisVar));
+            clause1.push(~mkLit((int)support[i-1]-1));
+            clause1.push(~mkLit((int)(support[i]-1)));
+            if(perm[support[i]] > 0)
+              clause1.push( mkLit(perm[support[i]] - 1));
+            else
+              clause1.push(~mkLit(abs(perm[support[i]]) - 1));
+            this->addClause_(clause1);
 
-        vec<Lit> clause4;
-        clause4.clear();
-        clause4.push(~mkLit(thisVar));
-        if(perm[support[i]] > 0)
-          clause4.push( mkLit(perm[support[i - 1]] - 1));
-        else
-          clause4.push(~mkLit(abs(perm[support[i - 1]]) - 1));
-        clause4.push( mkLit(nextVar));
-        this->addClause_(clause4);
-        thisVar = this->nVars() - 1 ;
+
+            vec<Lit> clause2;
+            clause2.clear();
+            clause2.push(~mkLit(thisVar));
+            clause2.push(~mkLit((int)support[i-1]-1));
+            clause2.push( mkLit(nextVar));
+            this->addClause_(clause2);
+            
+            vec<Lit> clause3;
+            clause3.clear();
+            clause3.push(~mkLit(thisVar));
+            if(perm[support[i-1]] > 0)
+              clause3.push( mkLit(perm[support[i-1]] - 1));
+            else
+              clause3.push(~mkLit(abs(perm[support[i-1]]) - 1));
+            clause3.push(~mkLit((int)support[i] - 1));
+            if(perm[support[i]] > 0)
+              clause3.push( mkLit(perm[support[i]] - 1));
+            else
+              clause3.push(~mkLit(abs(perm[support[i]]) - 1));
+            this->addClause_(clause3);
+    
+            vec<Lit> clause4;
+            clause4.clear();
+            clause4.push(~mkLit(thisVar));
+            if(perm[support[i]] > 0)
+               clause4.push( mkLit(perm[support[i - 1]] - 1));
+            else
+              clause4.push(~mkLit(abs(perm[support[i - 1]]) - 1));
+            clause4.push( mkLit(nextVar));
+            this->addClause_(clause4);
+          }
+        thisVar = nextVar ;
       }
     //printf("Added shatter SBP clauses\n");
   }

@@ -44,7 +44,8 @@ BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry ad
 BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
 BoolOption symm_break_shatter("SYMMETRY", "symm-shatter", "Break symmetries via emulating shatter.", false);
 BoolOption symm_break_chaining_imp("SYMMETRY", "symm-chain", "Break symmetries via implication chaining SBPs", false);
-BoolOption symm_eq_table("SYMMETRY", "symm-eq-table", "Use equality table auxiliary variables", false);
+BoolOption symm_eq_aux("SYMMETRY", "symm-eq-aux", "Use equality table auxiliary variables", false);
+BoolOption symm_dynamic("SYMMETRY", "symm-dynamic", "Add the symmetry breaking clauses dynamically", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -771,8 +772,6 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
       // }
     vec<Lit> clause0;
     //Variable IDs start from 0
-    if(symm_eq_table)
-      this->addEq(support[0], perm[support[0]]);
 
     clause0.push(~mkLit(support[0]-1));
     if(perm[support[0]] > 0)
@@ -782,8 +781,6 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     this->addClause_(clause0);
     for (i = 1; i < nsupport; ++i)
       {
-        if(symm_eq_table)
-          this->addEq(support[i], perm[support[i]]);
 
     	/* again, terminate at phase shift */
 
@@ -859,8 +856,6 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
         // lbool tempVar;
     this->newSymmAuxVar();
       // }
-    if(symm_eq_table)
-      this->addEq(support[0], perm[support[0]]);
 
     vec<Lit> clause00;
     //Variable IDs start from 0
@@ -887,8 +882,6 @@ void SimpSolver::addChainingSBP(int* perm, unsigned int* support, unsigned int n
 
     for (i = 1; i < nsupport; ++i)
       {
-        if(symm_eq_table)
-          this->addEq(support[i], perm[support[i]]);
     	/* again, terminate at phase shift */
 
     	/* if (p[x] == -x) { */
@@ -962,50 +955,86 @@ void SimpSolver::cleanVarEqs()
 unsigned int NumNaiveEqs = 0;
 unsigned int NumEqs = 0;
 
+int eqCmp(void* eq1, void* eq2)
+  {
+    // printf("%ld\n", (long int)eq1);
+    // printf("%d->%d, %d->%d\n", ((Minisat::Eq*)eq1)->v, ((Minisat::Eq*)eq1)->l, ((Minisat::Eq*)eq2)->v, ((Minisat::Eq*)eq2)->l);
+    return (((Minisat::Eq*)eq1)->v == ((Minisat::Eq*)eq2)->v && ((Minisat::Eq*)eq1)->l == ((Minisat::Eq*)eq2)->l );
+  }
 
 
 void SimpSolver::addEq(long int l1, long int l2)
   {
     //printf("Adding equality\n");
-    NumNaiveEqs++;
-    int eq_idx1 = paContains(this->eqs[abs(l1)], intAbsEq, (void*) l2);
-    int eq_idx2 = paContains(this->eqs[abs(l2)], intAbsEq, (void*) l1);
-    if((eq_idx1 > 0 && eq_idx2 < 0) || (eq_idx2 > 0 && eq_idx1 < 0))
+    NumNaiveEqs++;    
+    Minisat::Eq* newEq = (Minisat::Eq*)malloc(sizeof(Eq));
+    newEq -> added = 0;
+    newEq -> defAdded = 0;
+    newEq -> succ = NULL;
+    newEq -> pred = NULL;
+    if(l1 < 0 && l2 > 0)
       {
-        printf("Inconsistent eqs table: 1, exiting!!\n");
-        exit(-1);
+        newEq -> v = l2;
+        newEq -> l = l1;
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[-l1], (void*) newEq);
+        paAdd(this->eqs[l2], (void*) newEq);
       }
-    if(((long int) paElementAt(this->eqs[abs(l1)], eq_idx1) > 0 &&(long int) paElementAt(this->eqs[abs(l2)], eq_idx2) < 0)
-       ||((long int) paElementAt(this->eqs[abs(l1)], eq_idx1) < 0 && (long int) paElementAt(this->eqs[abs(l2)], eq_idx2) > 0))
+    else if(l1 > 0 && l2 < 0)
       {
-        printf("Inconsistent eqs table: 2, exiting!!\n");
-        exit(-1);
+        newEq -> v = l1;
+        newEq -> l = l2;
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[l1], (void*) newEq);
+        paAdd(this->eqs[-l2], (void*) newEq);
       }
-    if(eq_idx1 >= 0)
+    else
       {
-        return;
+        newEq -> v = abs(l1);
+        newEq -> l = abs(l2);
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[abs(l1)], newEq);
+        paAdd(this->eqs[abs(l2)], newEq);
       }
     NumEqs++;
     /* printf("Adding %ld %ld\n", l1, l2); */
     /* printf("eq_idx1 = %d eq_idx2 = %d\n", eq_idx1, eq_idx2); */
-    if(l1 < 0 && l2 > 0)
-      {
-        paAdd(this->eqs[-l1], (void*) -l2);
-        paAdd(this->eqs[l2], (void*) l1);
-      }
-    else if(l1 > 0 && l2 < 0)
-      {
-        paAdd(this->eqs[l1], (void*) l2);
-        paAdd(this->eqs[-l2], (void*) -l1);
-      }
-    else
-      {
-        paAdd(this->eqs[l1], (void*) l2);
-        paAdd(this->eqs[l2], (void*) l1);
-      }
   }
 
+bool SimpSolver::constructEqTable(int* perm, unsigned int* support, unsigned int nsupport)
+ {
+   unsigned int i = 0;
+   for( i = 0 ; i < nsupport ; i++)
+      this->addEq(support[i], perm[support[i]]);   
+ }
+
 bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
+  if(symm_eq_aux || symm_dynamic)
+    this->constructEqTable(perm.f, perm.dom, perm.domSize);
   if(symm_break_shatter)
     addShatterSBP(perm.f, perm.dom, perm.domSize);
   else if(symm_break_chaining_imp)

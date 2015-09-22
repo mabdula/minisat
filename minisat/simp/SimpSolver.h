@@ -28,7 +28,8 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 // Symmetry options:
 extern Minisat::StringOption symmetry;
 extern Minisat::BoolOption symm_eq_table;
-extern Minisat::BoolOption symm_eq_table;
+extern Minisat::BoolOption symm_eq_aux;
+extern Minisat::BoolOption symm_dynamic;
 /* extern Minisat::BoolOption symm_aux_decide; */
 /* extern Minisat::BoolOption symm_aux_freeze; */
 /* extern Minisat::BoolOption symm_break_shatter; */
@@ -75,6 +76,8 @@ namespace Minisat {
     PARRAY* eqs;
     void initVarEqs();
     void cleanVarEqs();
+   bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
+
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

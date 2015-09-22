@@ -771,6 +771,7 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     this->newSymmAuxVar();
     int var1 = this->nVars() - 1;
       // }
+
     vec<Lit> clause0;
     //Variable IDs start from 0
     clause0.push(~mkLit(support[0]-1));
@@ -779,6 +780,11 @@ void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int ns
     else
       clause0.push(~mkLit(abs(perm[support[0]]) - 1));
     this->addClause_(clause0);
+    vec<Lit> clause1;
+    //Variable IDs start from 0
+    clause1.push(mkLit(var1));
+    this->addClause_(clause1);
+
     int thisVar = var1;
     for (i = 1; i < nsupport; ++i)
       {

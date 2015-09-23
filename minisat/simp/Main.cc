@@ -126,8 +126,6 @@ int main(int argc, char** argv)
           extern unsigned int NumEqs;
           if (symm_eq_aux || symm_dynamic)
             printf("|  Equalities added   :  %12d                                         |\n", NumEqs);
-          int i = 0;
-          for(i = 0 ; i < S.ca)
         }
 
         // Change to signal-handlers that will only notify the solver and allow it to terminate
@@ -180,7 +178,8 @@ int main(int argc, char** argv)
                 fprintf(res, "INDET\n");
             fclose(res);
         }
-
+        if(symmetry != NULL)
+          S.printSBPStats();
 #ifdef NDEBUG
         exit(ret == l_True ? 10 : ret == l_False ? 20 : 0);     // (faster than "return", which will invoke the destructor for 'Solver')
 #else

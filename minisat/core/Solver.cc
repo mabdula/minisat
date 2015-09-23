@@ -171,7 +171,7 @@ bool Solver::addClause_(vec<Lit>& ps, bool SBP = false)
         uncheckedEnqueue(ps[0]);
         return ok = (propagate() == CRef_Undef);
     }else{
-        CRef cr = ca.alloc(ps, false, true);
+        CRef cr = ca.alloc(ps, false, SBP);
         clauses.push(cr);
         attachClause(cr);
     }
@@ -1240,4 +1240,96 @@ void Solver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsuppo
 bool Solver::addSymmetryGenerator(Minisat::Permutation& perm) {
   addShatterSBP(perm.f, perm.dom, perm.domSize);
   return ok;
+}
+
+void Solver::printSBPStats()
+{
+  int i = 0 ;
+  int numSBPs = 0;
+  int untouchedSBP = 0;
+  int numNoSBPs = 0;
+  int untouchedNoSBP = 0;
+  int minSBPFirstPropagation = 1000000000;
+  int avgSBPFirstPropagation = 0;
+  int maxSBPFirstPropagation = -1;
+  unsigned int minSBPNumPropagation = 0;
+  unsigned int avgSBPNumPropagation = 0;
+  unsigned int maxSBPNumPropagation = 0;
+  int minNoSBPFirstPropagation = 1000000000;
+  int avgNoSBPFirstPropagation = 0;
+  int maxNoSBPFirstPropagation = -1;
+  unsigned int minNoSBPNumPropagation = 0;
+  unsigned int avgNoSBPNumPropagation = 0;
+  unsigned int maxNoSBPNumPropagation = 0;
+  for( i = 0 ; i < this->clauses.size() ; i++)
+    {
+      if (ca.isSBP.has(clauses[i])) 
+        {
+          if (ca.isSBP[clauses[i]] )
+            {
+              if(ca.firstPropagation[clauses[i]] == -1)
+                untouchedSBP++;
+              if(ca.firstPropagation[clauses[i]] <  minSBPFirstPropagation)
+                minSBPFirstPropagation = ca.firstPropagation[clauses[i]];
+              avgSBPFirstPropagation += ca.firstPropagation[clauses[i]];
+              if(ca.firstPropagation[clauses[i]] >  maxSBPFirstPropagation)
+                maxSBPFirstPropagation = ca.firstPropagation[clauses[i]];                
+              if(ca.numPropagations[clauses[i]] <  minSBPNumPropagation)
+                minSBPNumPropagation = ca.numPropagations[clauses[i]];
+              avgSBPNumPropagation += ca.numPropagations[clauses[i]];
+              if(ca.numPropagations[clauses[i]] >  maxSBPNumPropagation)
+                maxSBPNumPropagation = ca.numPropagations[clauses[i]];
+              numSBPs++;
+            }
+          else
+            {              
+              if(ca.firstPropagation[clauses[i]] == -1)
+                untouchedNoSBP++;
+              if(ca.firstPropagation[clauses[i]] <  minNoSBPFirstPropagation)
+                minNoSBPFirstPropagation = ca.firstPropagation[clauses[i]];
+              avgNoSBPFirstPropagation += ca.firstPropagation[clauses[i]];
+              if(ca.firstPropagation[clauses[i]] >  maxNoSBPFirstPropagation)
+                maxNoSBPFirstPropagation = ca.firstPropagation[clauses[i]];                
+              if(ca.numPropagations[clauses[i]] <  minNoSBPNumPropagation)
+                minNoSBPNumPropagation = ca.numPropagations[clauses[i]];
+              avgNoSBPNumPropagation += ca.numPropagations[clauses[i]];
+              if(ca.numPropagations[clauses[i]] >  maxNoSBPNumPropagation)
+                maxNoSBPNumPropagation = ca.numPropagations[clauses[i]];
+              numNoSBPs++;
+            }
+        }
+    }
+  printf(\
+  " NumSBP = %d\n\
+  untouchedSBP = %d\n\
+  minSBPFirstPropagatoin = %d\n\
+  avgSBPFirstPropagation = %f\n\
+  maxSBPFirstPropagation = %d\n\
+  minSBPNumPropagation = %d\n\
+  avgSBPNumPropagation = %f\n\
+  maxSBPNumPropagation = %d\n\
+  NumNoSBP = %d\n\
+  untouchedNoSBP = %d\n\
+  minNoSBPFirstPropagation = %d\n\
+  avgNoSBPFirstPropagation = %f\n\
+  maxNoSBPFirstPropagation = %d\n\
+  minNoSBPNumPropagation = %d\n\
+  avgNoSBPNumPropagation = %f\n\
+  maxNoSBPNumPropagation = %d\n",\
+  numSBPs,\
+  untouchedSBP,\
+  minSBPFirstPropagation,\
+  (double)avgSBPFirstPropagation/numSBPs,\
+  maxSBPFirstPropagation,\
+  minSBPNumPropagation,\
+  (double)avgSBPNumPropagation/numSBPs,\
+  maxSBPNumPropagation,\
+  numNoSBPs,\
+  untouchedNoSBP,\
+  minNoSBPFirstPropagation,\
+  (double)avgNoSBPFirstPropagation/numNoSBPs,\
+  maxNoSBPFirstPropagation,\
+  minNoSBPNumPropagation,\
+  (double)avgNoSBPNumPropagation/numNoSBPs,\
+  maxNoSBPNumPropagation);
 }

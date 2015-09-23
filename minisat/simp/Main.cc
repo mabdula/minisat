@@ -126,7 +126,8 @@ int main(int argc, char** argv)
           extern unsigned int NumEqs;
           if (symm_eq_aux || symm_dynamic)
             printf("|  Equalities added   :  %12d                                         |\n", NumEqs);
-
+          int i = 0;
+          for(i = 0 ; i < S.ca)
         }
 
         // Change to signal-handlers that will only notify the solver and allow it to terminate

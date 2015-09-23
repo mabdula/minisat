@@ -220,9 +220,52 @@ public:
 
 
 //=================================================================================================
+// CMap -- a class for mapping clauses to values:
+
+
+template<class T>
+class CMap
+{
+    struct CRefHash {
+        uint32_t operator()(CRef cr) const { return (uint32_t)cr; } };
+
+    typedef Map<CRef, T, CRefHash> HashTable;
+    HashTable map;
+        
+ public:
+    // Size-operations:
+    void     clear       ()                           { map.clear(); }
+    int      size        ()                const      { return map.elems(); }
+
+    
+    // Insert/Remove/Test mapping:
+    void     insert      (CRef cr, const T& t){ map.insert(cr, t); }
+    void     growTo      (CRef cr, const T& t){ map.insert(cr, t); } // NOTE: for compatibility
+    void     remove      (CRef cr)            { map.remove(cr); }
+    bool     has         (CRef cr)      { return map.has(cr); }
+    bool     has         (CRef cr, T& t)      { return map.peek(cr, t); }
+
+    // Vector interface (the clause 'c' must already exist):
+    const T& operator [] (CRef cr) const      { return map[cr]; }
+    T&       operator [] (CRef cr)            { return map[cr]; }
+
+    // Iteration (not transparent at all at the moment):
+    int  bucket_count() const { return map.bucket_count(); }
+    const vec<typename HashTable::Pair>& bucket(int i) const { return map.bucket(i); }
+
+    // Move contents to other map:
+    void moveTo(CMap& other){ map.moveTo(other.map); }
+
+    // TMP debug:
+    void debug(){
+        printf(" --- size = %d, bucket_count = %d\n", size(), map.bucket_count()); }
+};
+
+//=================================================================================================
 // ClauseAllocator -- a simple class for allocating memory for clauses:
 
 const CRef CRef_Undef = RegionAllocator<uint32_t>::Ref_Undef;
+
 class ClauseAllocator
 {
     RegionAllocator<uint32_t> ra;
@@ -231,6 +274,11 @@ class ClauseAllocator
         return (sizeof(Clause) + (sizeof(Lit) * (size + (int)has_extra))) / sizeof(uint32_t); }
 
  public:
+    CMap<unsigned int> numPropagations;
+    CMap<int> firstPropagation;
+    CMap<char> isSBP;
+
+
     enum { Unit_Size = RegionAllocator<uint32_t>::Unit_Size };
 
     bool extra_clause_field;
@@ -242,22 +290,31 @@ class ClauseAllocator
         to.extra_clause_field = extra_clause_field;
         ra.moveTo(to.ra); }
 
-    CRef alloc(const vec<Lit>& ps, bool learnt = false)
+    CRef alloc(const vec<Lit>& ps, bool learnt = false, bool SBP = false)
     {
         assert(sizeof(Lit)      == sizeof(uint32_t));
         assert(sizeof(float)    == sizeof(uint32_t));
         bool use_extra = learnt | extra_clause_field;
         CRef cid       = ra.alloc(clauseWord32Size(ps.size(), use_extra));
         new (lea(cid)) Clause(ps, use_extra, learnt);
-
+        /* printf("Allocated clause %d\n", cid); */
+        /* printf("Adding stats to clause %d\n", cid); */
+        this->isSBP.insert(cid, SBP);
+        this->numPropagations.insert(cid, 0);
+        this->firstPropagation.insert(cid, -1);
         return cid;
     }
 
-    CRef alloc(const Clause& from)
+    CRef alloc(const Clause& from, bool SBP = false)
     {
         bool use_extra = from.learnt() | extra_clause_field;
         CRef cid       = ra.alloc(clauseWord32Size(from.size(), use_extra));
         new (lea(cid)) Clause(from, use_extra);
+        /* printf("Allocated clause %d from clause\n", cid); */
+        /* printf("Adding stats to clause %d\n", cid); */
+        this->isSBP.insert(cid, SBP);
+        this->numPropagations.insert(cid, 0);
+        this->firstPropagation.insert(cid, -1);
         return cid; }
 
     uint32_t size      () const      { return ra.size(); }
@@ -378,48 +435,6 @@ void OccLists<K,Vec,Deleted,MkIndex>::clean(const K& idx)
     vec.shrink(i - j);
     dirty[idx] = 0;
 }
-
-
-//=================================================================================================
-// CMap -- a class for mapping clauses to values:
-
-
-template<class T>
-class CMap
-{
-    struct CRefHash {
-        uint32_t operator()(CRef cr) const { return (uint32_t)cr; } };
-
-    typedef Map<CRef, T, CRefHash> HashTable;
-    HashTable map;
-        
- public:
-    // Size-operations:
-    void     clear       ()                           { map.clear(); }
-    int      size        ()                const      { return map.elems(); }
-
-    
-    // Insert/Remove/Test mapping:
-    void     insert      (CRef cr, const T& t){ map.insert(cr, t); }
-    void     growTo      (CRef cr, const T& t){ map.insert(cr, t); } // NOTE: for compatibility
-    void     remove      (CRef cr)            { map.remove(cr); }
-    bool     has         (CRef cr, T& t)      { return map.peek(cr, t); }
-
-    // Vector interface (the clause 'c' must already exist):
-    const T& operator [] (CRef cr) const      { return map[cr]; }
-    T&       operator [] (CRef cr)            { return map[cr]; }
-
-    // Iteration (not transparent at all at the moment):
-    int  bucket_count() const { return map.bucket_count(); }
-    const vec<typename HashTable::Pair>& bucket(int i) const { return map.bucket(i); }
-
-    // Move contents to other map:
-    void moveTo(CMap& other){ map.moveTo(other.map); }
-
-    // TMP debug:
-    void debug(){
-        printf(" --- size = %d, bucket_count = %d\n", size(), map.bucket_count()); }
-};
 
 
 /*_________________________________________________________________________________________________

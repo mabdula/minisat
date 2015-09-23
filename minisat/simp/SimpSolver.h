@@ -45,9 +45,6 @@ namespace Minisat {
 
  class SimpSolver : public Solver {
  public:
-    CMap<unsigned int> numPropagations;
-    CMap<unsigned int> firstPropagation;
-    CMap<char> isSBP;
     // Constructor/Destructor:
     //
     SimpSolver();

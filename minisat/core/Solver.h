@@ -37,7 +37,6 @@ namespace Minisat {
 
 class Solver {
 public:
-
     // Constructor/Destructor:
     //
     Solver();
@@ -54,7 +53,7 @@ public:
     bool    addClause (Lit p, Lit q);                           // Add a binary clause to the solver. 
     bool    addClause (Lit p, Lit q, Lit r);                    // Add a ternary clause to the solver. 
     bool    addClause (Lit p, Lit q, Lit r, Lit s);             // Add a quaternary clause to the solver. 
-    bool    addClause_(      vec<Lit>& ps);                     // Add a clause to the solver without making superflous internal copy. Will
+    bool    addClause_(      vec<Lit>& ps, bool SBP = false);                     // Add a clause to the solver without making superflous internal copy. Will
                                                                 // change the passed vector 'ps'.
 
     // Symmetry specification

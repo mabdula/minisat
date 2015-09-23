@@ -150,7 +150,7 @@ void Solver::releaseVar(Lit l)
 }
 
 
-bool Solver::addClause_(vec<Lit>& ps)
+bool Solver::addClause_(vec<Lit>& ps, bool SBP = false)
 {
     assert(decisionLevel() == 0);
     if (!ok) return false;
@@ -171,7 +171,7 @@ bool Solver::addClause_(vec<Lit>& ps)
         uncheckedEnqueue(ps[0]);
         return ok = (propagate() == CRef_Undef);
     }else{
-        CRef cr = ca.alloc(ps, false);
+        CRef cr = ca.alloc(ps, false, true);
         clauses.push(cr);
         attachClause(cr);
     }
@@ -522,6 +522,15 @@ CRef Solver::propagate()
             // Make sure the false literal is data[1]:
             CRef     cr        = i->cref;
             Clause&  c         = ca[cr];
+            //printf("Propagating clause %d\n", cr);
+            if(!ca.firstPropagation.has(cr))
+              ;//printf("Clause %d has no stats\n", cr);
+            else 
+              {
+                if(ca.firstPropagation[cr] == -1)
+                  ca.firstPropagation[cr] = this->conflicts;
+                ca.numPropagations[cr]++;
+              }
             Lit      false_lit = ~p;
             if (c[0] == false_lit)
                 c[0] = c[1], c[1] = false_lit;

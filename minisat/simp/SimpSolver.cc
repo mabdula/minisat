@@ -182,15 +182,11 @@ bool SimpSolver::addClause_(vec<Lit>& ps, bool SBP = false)
     if (use_rcheck && implied(ps))
         return true;
 
-    if (!Solver::addClause_(ps))
+    if (!Solver::addClause_(ps, SBP))
         return false;
 
     CRef          cr = clauses.last();
     const Clause& c  = ca[cr];
-    if(SBP)
-      {
-        this->isSBP[c] = true;
-      }
 
     if (use_simplification && clauses.size() == nclauses + 1){
 
@@ -1122,7 +1118,7 @@ unsigned int SimpSolver::addEqAuxVars(unsigned int v, int l)
     // Adding the definitions of the aux var if they are not there already
     if(!tempEq->defAdded)
       {
-        printf("Adding eq aux vars and their defining clauses\n");
+        //printf("Adding eq aux vars and their defining clauses\n");
         this->newSymmAuxVar();
         tempEq->cnfVarID = this->nVars() - 1;
         vec<Lit> var1DefClause;

@@ -45,6 +45,9 @@ namespace Minisat {
 
  class SimpSolver : public Solver {
  public:
+    CMap<unsigned int> numPropagations;
+    CMap<unsigned int> firstPropagation;
+    CMap<char> isSBP;
     // Constructor/Destructor:
     //
     SimpSolver();
@@ -61,7 +64,7 @@ namespace Minisat {
     bool    addClause (Lit p, Lit q);        // Add a binary clause to the solver.
     bool    addClause (Lit p, Lit q, Lit r); // Add a ternary clause to the solver.
     bool    addClause (Lit p, Lit q, Lit r, Lit s); // Add a quaternary clause to the solver. 
-    bool    addClause_(      vec<Lit>& ps);
+    bool    addClause_(      vec<Lit>& ps, bool SBP = false);
     bool    substitute(Var v, Lit x);  // Replace all occurences of v with x (may cause a contradiction).
 
     // Symmetry specification
@@ -78,7 +81,6 @@ namespace Minisat {
     void cleanVarEqs();
     bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
     unsigned int addEqAuxVars(unsigned int v, int l);
-
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

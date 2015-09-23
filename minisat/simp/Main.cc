@@ -113,6 +113,9 @@ int main(int argc, char** argv)
         if (symm_eq_aux || symm_dynamic)
           S.initVarEqs();
 
+        CMap<unsigned int> numPropagations;
+        CMap<unsigned int> firstPropagation;
+        CMap<char> isSBP;
         double symmetry_parsed_time = cpuTime();
         if (symmetry != NULL) {
           gzFile symm_in = gzopen(symmetry, "rb");

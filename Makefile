@@ -17,7 +17,7 @@ BUILD_DIR      ?= build
 MINISAT_RELSYM ?= -g
 
 # Sets of compile flags for different build types
-MINISAT_REL    ?= -g
+MINISAT_REL    ?= -O3
 #-O3 -D NDEBUG
 MINISAT_DEB    ?= -g
  #-O0 -D DEBUG 
@@ -75,7 +75,6 @@ endif
 SRCS = $(wildcard minisat/core/*.cc) $(wildcard minisat/simp/*.cc) $(wildcard minisat/utils/*.cc) 
 HDRS = $(wildcard minisat/mtl/*.h) $(wildcard minisat/core/*.h) $(wildcard minisat/simp/*.h) $(wildcard minisat/utils/*.h)
 OBJS = $(filter-out %Main.o, $(SRCS:.cc=.o))
-OBJS += $(wildcard libds-2.2/parray.o)
 
 r:	$(BUILD_DIR)/release/bin/$(MINISAT)
 d:	$(BUILD_DIR)/debug/bin/$(MINISAT)
@@ -97,7 +96,6 @@ $(BUILD_DIR)/release/%.o:			MINISAT_CXXFLAGS +=$(MINISAT_REL) $(MINISAT_RELSYM)
 $(BUILD_DIR)/debug/%.o:				MINISAT_CXXFLAGS +=$(MINISAT_DEB) -g
 $(BUILD_DIR)/profile/%.o:			MINISAT_CXXFLAGS +=$(MINISAT_PRF) -pg
 $(BUILD_DIR)/dynamic/%.o:			MINISAT_CXXFLAGS +=$(MINISAT_REL) $(MINISAT_FPIC)
-$(BUILD_DIR)/libds-2.2/parray.o:		MINISAT_CXXFLAGS +=$(MINISAT_REL) $(MINISAT_FPIC)
 
 
 ## Build-type Link-flags:

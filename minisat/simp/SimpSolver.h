@@ -23,7 +23,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 
 #include "minisat/mtl/Queue.h"
 #include "minisat/core/Solver.h"
-#include "libds-2.2/ds.h"
+#include "minisat/utils/ds.h"
 
 // Symmetry options:
 

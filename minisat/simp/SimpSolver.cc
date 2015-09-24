@@ -1036,28 +1036,22 @@ unsigned int SimpSolver::addEqAuxVars(unsigned int v, int l)
         //printf("Adding eq aux vars and their defining clauses\n");
         this->newSymmAuxVar();
         tempEq->cnfVarID = this->nVars() - 1;
-        vec<Lit> var1DefClause;
-        var1DefClause.push(~mkLit(tempEq->cnfVarID));
-        var1DefClause.push(~mkLit(v - 1));
+        //Var1 def clause
         if(l > 0)
-          var1DefClause.push(mkLit(l - 1));
+          addClause(~mkLit(tempEq->cnfVarID), ~mkLit(v - 1), mkLit(l - 1), true);
         else
-          var1DefClause.push(~mkLit(abs(l) - 1));
-        this-> addClause_(var1DefClause, true);
+          addClause(~mkLit(tempEq->cnfVarID), ~mkLit(v - 1), ~mkLit(abs(l) - 1), true);
 
         this->newSymmAuxVar();
-        vec<Lit> var2defClause1;
-        if(l > 0)
-          var2defClause1.push(mkLit(l - 1));
-        else
-          var2defClause1.push(~mkLit(abs(l) - 1));
-        var2defClause1.push(mkLit(tempEq->cnfVarID + 1));
-        this->addClause_(var2defClause1, true);
 
-        vec<Lit> var2defClause2;
-        var2defClause2.push(~mkLit(v - 1));
-        var2defClause2.push(mkLit(tempEq->cnfVarID + 1));
-        this->addClause_(var2defClause2, true);
+        //Var2 def clause 1
+        if(l > 0)
+          addClause(mkLit(l - 1), mkLit(tempEq->cnfVarID + 1), true);
+        else
+          addClause(~mkLit(abs(l) - 1), mkLit(tempEq->cnfVarID + 1), true);
+ 
+        //Var2 def clause 2
+        addClause(~mkLit(v - 1), mkLit(tempEq->cnfVarID + 1), true);
         tempEq->defAdded = 1;
       }
     return (tempEq->cnfVarID);

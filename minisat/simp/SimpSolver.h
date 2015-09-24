@@ -46,10 +46,10 @@ namespace Minisat {
     void    releaseVar(Lit l);
     bool    addClause (const vec<Lit>& ps);
     bool    addEmptyClause();                // Add the empty clause to the solver.
-    bool    addClause (Lit p);               // Add a unit clause to the solver.
-    bool    addClause (Lit p, Lit q);        // Add a binary clause to the solver.
-    bool    addClause (Lit p, Lit q, Lit r); // Add a ternary clause to the solver.
-    bool    addClause (Lit p, Lit q, Lit r, Lit s); // Add a quaternary clause to the solver. 
+    bool    addClause (Lit p, bool SBP = false);               // Add a unit clause to the solver.
+    bool    addClause (Lit p, Lit q, bool SBP = false);        // Add a binary clause to the solver.
+    bool    addClause (Lit p, Lit q, Lit r, bool SBP = false); // Add a ternary clause to the solver.
+    bool    addClause (Lit p, Lit q, Lit r, Lit s, bool SBP = false); // Add a quaternary clause to the solver. 
     bool    addClause_(      vec<Lit>& ps, bool SBP = false);
     bool    substitute(Var v, Lit x);  // Replace all occurences of v with x (may cause a contradiction).
 
@@ -204,10 +204,10 @@ inline void SimpSolver::updateElimHeap(Var v) {
 
 inline bool SimpSolver::addClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return addClause_(add_tmp); }
 inline bool SimpSolver::addEmptyClause()                     { add_tmp.clear(); return addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p, Lit q)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return addClause_(add_tmp); }
+inline bool SimpSolver::addClause    (Lit p, bool SBP = false)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, bool SBP = false)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, bool SBP = false)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s, bool SBP = false){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return addClause_(add_tmp, SBP); }
 inline void SimpSolver::setFrozen    (Var v, bool b) { frozen[v] = (char)b; if (use_simplification && !b) { updateElimHeap(v); } }
 
 inline void SimpSolver::freezeVar(Var v){

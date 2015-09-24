@@ -129,6 +129,8 @@ static void parse_SYMM_main(B& in, Solver& S) {
             readGenerator(in, &perm);
             S.addSymmetryGenerator(perm); }
     }
+    free(perm.f);
+    free(perm.dom);
 }
 
 // Inserts problem into solver.

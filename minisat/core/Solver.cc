@@ -171,8 +171,11 @@ bool Solver::addClause_(vec<Lit>& ps, bool SBP = false)
         uncheckedEnqueue(ps[0]);
         return ok = (propagate() == CRef_Undef);
     }else{
-        CRef cr = ca.alloc(ps, false, SBP);
+        CRef cr = ca.alloc(ps, false);
         clauses.push(cr);
+        this->ca[cr].isSBP = SBP;
+        this->ca[cr].numPropagations = 0;
+        this->ca[cr].firstPropagation = -1;
         attachClause(cr);
     }
 
@@ -523,14 +526,9 @@ CRef Solver::propagate()
             CRef     cr        = i->cref;
             Clause&  c         = ca[cr];
             //printf("Propagating clause %d\n", cr);
-            if(!ca.firstPropagation.has(cr))
-              ;//printf("Clause %d has no stats\n", cr);
-            else 
-              {
-                if(ca.firstPropagation[cr] == -1)
-                  ca.firstPropagation[cr] = this->conflicts;
-                ca.numPropagations[cr]++;
-              }
+            if(ca[cr].firstPropagation == -1)
+              ca[cr].firstPropagation = this->conflicts;
+            ca[cr].numPropagations++;
             Lit      false_lit = ~p;
             if (c[0] == false_lit)
                 c[0] = c[1], c[1] = false_lit;
@@ -1263,40 +1261,37 @@ void Solver::printSBPStats()
   unsigned int maxNoSBPNumPropagation = 0;
   for( i = 0 ; i < this->clauses.size() ; i++)
     {
-      if (ca.isSBP.has(clauses[i])) 
+      if (ca[clauses[i]].isSBP)
         {
-          if (ca.isSBP[clauses[i]] )
-            {
-              if(ca.firstPropagation[clauses[i]] == -1)
-                untouchedSBP++;
-              if(ca.firstPropagation[clauses[i]] <  minSBPFirstPropagation)
-                minSBPFirstPropagation = ca.firstPropagation[clauses[i]];
-              avgSBPFirstPropagation += ca.firstPropagation[clauses[i]];
-              if(ca.firstPropagation[clauses[i]] >  maxSBPFirstPropagation)
-                maxSBPFirstPropagation = ca.firstPropagation[clauses[i]];                
-              if(ca.numPropagations[clauses[i]] <  minSBPNumPropagation)
-                minSBPNumPropagation = ca.numPropagations[clauses[i]];
-              avgSBPNumPropagation += ca.numPropagations[clauses[i]];
-              if(ca.numPropagations[clauses[i]] >  maxSBPNumPropagation)
-                maxSBPNumPropagation = ca.numPropagations[clauses[i]];
-              numSBPs++;
-            }
-          else
-            {              
-              if(ca.firstPropagation[clauses[i]] == -1)
-                untouchedNoSBP++;
-              if(ca.firstPropagation[clauses[i]] <  minNoSBPFirstPropagation)
-                minNoSBPFirstPropagation = ca.firstPropagation[clauses[i]];
-              avgNoSBPFirstPropagation += ca.firstPropagation[clauses[i]];
-              if(ca.firstPropagation[clauses[i]] >  maxNoSBPFirstPropagation)
-                maxNoSBPFirstPropagation = ca.firstPropagation[clauses[i]];                
-              if(ca.numPropagations[clauses[i]] <  minNoSBPNumPropagation)
-                minNoSBPNumPropagation = ca.numPropagations[clauses[i]];
-              avgNoSBPNumPropagation += ca.numPropagations[clauses[i]];
-              if(ca.numPropagations[clauses[i]] >  maxNoSBPNumPropagation)
-                maxNoSBPNumPropagation = ca.numPropagations[clauses[i]];
-              numNoSBPs++;
-            }
+          if(ca[clauses[i]].firstPropagation == -1)
+            untouchedSBP++;
+          if(ca[clauses[i]].firstPropagation <  minSBPFirstPropagation)
+            minSBPFirstPropagation = ca[clauses[i]].firstPropagation;
+          avgSBPFirstPropagation += ca[clauses[i]].firstPropagation;
+          if(ca[clauses[i]].firstPropagation >  maxSBPFirstPropagation)
+            maxSBPFirstPropagation = ca[clauses[i]].firstPropagation;                
+          if(ca[clauses[i]].numPropagations <  minSBPNumPropagation)
+            minSBPNumPropagation = ca[clauses[i]].numPropagations;
+          avgSBPNumPropagation += ca[clauses[i]].numPropagations;
+          if(ca[clauses[i]].numPropagations >  maxSBPNumPropagation)
+            maxSBPNumPropagation = ca[clauses[i]].numPropagations;
+          numSBPs++;
+        }
+      else
+        {              
+          if(ca[clauses[i]].firstPropagation == -1)
+            untouchedNoSBP++;
+          if(ca[clauses[i]].firstPropagation <  minNoSBPFirstPropagation)
+            minNoSBPFirstPropagation = ca[clauses[i]].firstPropagation;
+          avgNoSBPFirstPropagation += ca[clauses[i]].firstPropagation;
+          if(ca[clauses[i]].firstPropagation >  maxNoSBPFirstPropagation)
+            maxNoSBPFirstPropagation = ca[clauses[i]].firstPropagation;                
+          if(ca[clauses[i]].numPropagations <  minNoSBPNumPropagation)
+            minNoSBPNumPropagation = ca[clauses[i]].numPropagations;
+          avgNoSBPNumPropagation += ca[clauses[i]].numPropagations;
+          if(ca[clauses[i]].numPropagations >  maxNoSBPNumPropagation)
+            maxNoSBPNumPropagation = ca[clauses[i]].numPropagations;
+          numNoSBPs++;
         }
     }
   printf(\

@@ -143,7 +143,7 @@ class Clause {
         unsigned learnt    : 1;
         unsigned has_extra : 1;
         unsigned reloced   : 1;
-        unsigned size      : 27; }                        header;
+        unsigned size      : 27;  }                        header;
     union { Lit lit; float act; uint32_t abs; CRef rel; } data[0];
 
     friend class ClauseAllocator;
@@ -184,6 +184,9 @@ class Clause {
     }
 
 public:
+   unsigned int numPropagations;
+   int firstPropagation;
+   bool isSBP; 
     void calcAbstraction() {
         assert(header.has_extra);
         uint32_t abstraction = 0;
@@ -274,9 +277,6 @@ class ClauseAllocator
         return (sizeof(Clause) + (sizeof(Lit) * (size + (int)has_extra))) / sizeof(uint32_t); }
 
  public:
-    CMap<unsigned int> numPropagations;
-    CMap<int> firstPropagation;
-    CMap<char> isSBP;
 
 
     enum { Unit_Size = RegionAllocator<uint32_t>::Unit_Size };
@@ -290,31 +290,21 @@ class ClauseAllocator
         to.extra_clause_field = extra_clause_field;
         ra.moveTo(to.ra); }
 
-    CRef alloc(const vec<Lit>& ps, bool learnt = false, bool SBP = false)
+    CRef alloc(const vec<Lit>& ps, bool learnt = false)
     {
         assert(sizeof(Lit)      == sizeof(uint32_t));
         assert(sizeof(float)    == sizeof(uint32_t));
         bool use_extra = learnt | extra_clause_field;
         CRef cid       = ra.alloc(clauseWord32Size(ps.size(), use_extra));
         new (lea(cid)) Clause(ps, use_extra, learnt);
-        /* printf("Allocated clause %d\n", cid); */
-        /* printf("Adding stats to clause %d\n", cid); */
-        this->isSBP.insert(cid, SBP);
-        this->numPropagations.insert(cid, 0);
-        this->firstPropagation.insert(cid, -1);
         return cid;
     }
 
-    CRef alloc(const Clause& from, bool SBP = false)
+    CRef alloc(const Clause& from)
     {
         bool use_extra = from.learnt() | extra_clause_field;
         CRef cid       = ra.alloc(clauseWord32Size(from.size(), use_extra));
         new (lea(cid)) Clause(from, use_extra);
-        /* printf("Allocated clause %d from clause\n", cid); */
-        /* printf("Adding stats to clause %d\n", cid); */
-        this->isSBP.insert(cid, SBP);
-        this->numPropagations.insert(cid, 0);
-        this->firstPropagation.insert(cid, -1);
         return cid; }
 
     uint32_t size      () const      { return ra.size(); }

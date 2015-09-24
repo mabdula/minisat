@@ -729,6 +729,9 @@ lbool Solver::search(int nof_conflicts)
                 uncheckedEnqueue(learnt_clause[0]);
             }else{
                 CRef cr = ca.alloc(learnt_clause, true);
+                ca[cr].setIsSBP(false);
+                ca[cr].setPropagated(0);
+                ca[cr].setResAnal(0);
                 learnts.push(cr);
                 attachClause(cr);
                 claBumpActivity(ca[cr]);
@@ -1315,4 +1318,5 @@ void Solver::printSBPStats()
   numNoSBPs,\
   untouchedNoSBP,\
   unResAnalNoSBP);
+  printf("NumClauses = %d\n", clauses.size());
 }

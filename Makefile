@@ -17,11 +17,11 @@ BUILD_DIR      ?= build
 MINISAT_RELSYM ?= -g
 
 # Sets of compile flags for different build types
-MINISAT_REL    ?= -g
+MINISAT_REL    ?= -O3
 #-O3 -D NDEBUG
 MINISAT_DEB    ?= -g
  #-O0 -D DEBUG 
-MINISAT_PRF    ?= -g
+MINISAT_PRF    ?= -pg
 #-O3 -D NDEBUG
 MINISAT_FPIC   ?= -g -fpic
 

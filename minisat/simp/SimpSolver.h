@@ -26,16 +26,6 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "libds-2.2/ds.h"
 
 // Symmetry options:
-extern Minisat::StringOption symmetry;
-extern Minisat::BoolOption symm_eq_table;
-extern Minisat::BoolOption symm_eq_aux;
-extern Minisat::BoolOption symm_dynamic;
-/* extern Minisat::BoolOption symm_aux_decide; */
-/* extern Minisat::BoolOption symm_aux_freeze; */
-/* extern Minisat::BoolOption symm_break_shatter; */
-/* extern Minisat::BoolOption symm_break_chaining_imp; */
-/* extern Minisat::BoolOption symm_break_shatter_eq_table; */
-/* extern Minisat::BoolOption symm_break_chaining_imp_eq_table; */
 
 namespace Minisat {
 
@@ -53,7 +43,6 @@ namespace Minisat {
     // Problem specification:
     //
     Var     newVar    (lbool upol = l_Undef, bool dvar = true);
-    Var     newSymmAuxVar    ();
     void    releaseVar(Lit l);
     bool    addClause (const vec<Lit>& ps);
     bool    addEmptyClause();                // Add the empty clause to the solver.
@@ -66,6 +55,8 @@ namespace Minisat {
 
     // Symmetry specification
     //
+    Var     newSymmAuxVar    ();
+
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
     bool addSymmetryGenerator(Minisat::Permutation& perm);
     void addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);

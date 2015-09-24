@@ -29,6 +29,13 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/core/SolverTypes.h"
 #include "minisat/core/Symm.h"
 
+extern Minisat::StringOption symmetry;
+extern Minisat::BoolOption symm_eq_table;
+extern Minisat::BoolOption symm_aux_decide;
+extern Minisat::BoolOption symm_break_shatter;
+extern Minisat::BoolOption symm_break_chaining_imp;
+extern Minisat::BoolOption symm_eq_aux;
+extern Minisat::BoolOption symm_dynamic;
 
 namespace Minisat {
 
@@ -59,8 +66,7 @@ public:
     // Symmetry specification
     //
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
-    bool    addSymmetryGenerator(Minisat::Permutation& perm);
-    void    addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
+    Var     newSymmAuxVar();
     void    printSBPStats();
 
     // Solving:

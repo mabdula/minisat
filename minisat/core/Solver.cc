@@ -45,6 +45,12 @@ static IntOption     opt_restart_first     (_cat, "rfirst",      "The base resta
 static DoubleOption  opt_restart_inc       (_cat, "rinc",        "Restart interval increase factor", 2, DoubleRange(1, false, HUGE_VAL, false));
 static DoubleOption  opt_garbage_frac      (_cat, "gc-frac",     "The fraction of wasted memory allowed before a garbage collection is triggered",  0.20, DoubleRange(0, false, HUGE_VAL, false));
 static IntOption     opt_min_learnts_lim   (_cat, "min-learnts", "Minimum learnt clause limit",  0, IntRange(0, INT32_MAX));
+StringOption symmetry("SYMMETRY", "symm", "Permutations file.");
+BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry added auxilary variables.", false);
+BoolOption symm_break_shatter("SYMMETRY", "symm-shatter", "Break symmetries via emulating shatter.", false);
+BoolOption symm_break_chaining_imp("SYMMETRY", "symm-chain", "Break symmetries via implication chaining SBPs", false);
+BoolOption symm_eq_aux("SYMMETRY", "symm-eq-aux", "Use equality table auxiliary variables", false);
+BoolOption symm_dynamic("SYMMETRY", "symm-dynamic", "Add the symmetry breaking clauses dynamically", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -138,6 +144,9 @@ Var Solver::newVar(lbool upol, bool dvar)
     return v;
 }
 
+Var Solver::newSymmAuxVar() {
+    Var v = newVar(l_Undef, symm_aux_decide);
+    return v; }
 
 // Note: at the moment, only unassigned variable will be released (this is to avoid duplicate
 // releases of the same variable).
@@ -1154,95 +1163,8 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   return ok;
 }
 
-void Solver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport)
-  {
-    //printf("Adding shatter SBP clauses\n");
-    unsigned int i = 0 ;
-    // for (i = 0; i < nsupport; i++)
-    //   {
-        // lbool tempVar;
-        this->newVar();
-      // }
-    vec<Lit> clause0;
-    //Variable IDs start from 0
-
-    clause0.push(~mkLit(support[0]-1));
-    if(perm[support[0]] > 0)
-      clause0.push( mkLit(perm[support[0]] - 1));
-    else
-      clause0.push(~mkLit(abs(perm[support[0]]) - 1));
-    this->addClause_(clause0);
-    for (i = 1; i < nsupport; ++i)
-      {
-    	/* again, terminate at phase shift */
-
-    	/* if (p[x] == -x) { */
-    	/* 	clause(-vars, -z, -x, 0); */
-    	/* 	clause(-vars, p[z], -x, 0); */
-    	/* 	break; */
-    	/* } */
-        int thisVar = this->nVars() - 1 ;
-        //printf("ThisVar = %d NextVar = %d\r\n", thisVar, nextVar);
-        vec<Lit> clause1;
-        clause1.clear();
-        clause1.push(~mkLit(thisVar));
-        clause1.push(~mkLit((int)support[i-1]-1));
-        clause1.push(~mkLit((int)(support[i]-1)));
-        if(perm[support[i]] > 0)
-          clause1.push( mkLit(perm[support[i]] - 1));
-        else
-          clause1.push(~mkLit(abs(perm[support[i]]) - 1));
-        this->addClause_(clause1);
-
-        this->newVar();
-
-        int nextVar = this->nVars() - 1;
-
-        vec<Lit> clause2;
-        clause2.clear();
-        clause2.push(~mkLit(thisVar));
-        clause2.push(~mkLit((int)support[i-1]-1));
-        clause2.push( mkLit(nextVar));
-        this->addClause_(clause2);
-        
-        vec<Lit> clause3;
-        clause3.clear();
-        clause3.push(~mkLit(thisVar));
-
-        if(perm[support[i-1]] > 0)
-          clause3.push( mkLit(perm[support[i-1]] - 1));
-        else
-          clause3.push(~mkLit(abs(perm[support[i-1]]) - 1));
-
-        clause3.push(~mkLit((int)support[i] - 1));
-
-        if(perm[support[i]] > 0)
-          clause3.push( mkLit(perm[support[i]] - 1));
-        else
-          clause3.push(~mkLit(abs(perm[support[i]]) - 1));
 
 
-        this->addClause_(clause3);
-
-        vec<Lit> clause4;
-        clause4.clear();
-        clause4.push(~mkLit(thisVar));
-
-        if(perm[support[i]] > 0)
-          clause4.push( mkLit(perm[support[i - 1]] - 1));
-        else
-          clause4.push(~mkLit(abs(perm[support[i - 1]]) - 1));
-
-        clause4.push( mkLit(nextVar));
-        this->addClause_(clause4);
-      }
-    //printf("Added shatter SBP clauses\n");
-  }
-
-bool Solver::addSymmetryGenerator(Minisat::Permutation& perm) {
-  addShatterSBP(perm.f, perm.dom, perm.domSize);
-  return ok;
-}
 
 void Solver::printSBPStats()
 {
@@ -1318,5 +1240,5 @@ void Solver::printSBPStats()
   numNoSBPs,\
   untouchedNoSBP,\
   unResAnalNoSBP);
-  printf("NumClauses = %d\n", clauses.size());
+  printf("clauses.size() = %d num_clauses=%d, \n", clauses.size(), nClauses());
 }

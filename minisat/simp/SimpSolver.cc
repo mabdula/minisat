@@ -39,13 +39,7 @@ static IntOption    opt_subsumption_lim  (_cat, "sub-lim",      "Do not check if
 static DoubleOption opt_simp_garbage_frac(_cat, "simp-gc-frac", "The fraction of wasted memory allowed before a garbage collection is triggered during simplification.",  0.5, DoubleRange(0, false, HUGE_VAL, false));
 
 // Symmetry options:
-StringOption symmetry("SYMMETRY", "symm", "Permutations file.");
-BoolOption symm_aux_decide("SYMMETRY", "symm-aux-decide", "Decide on symmetry added auxilary variables.", false);
 BoolOption symm_aux_freeze("SYMMETRY", "symm-aux-freeze", "Symmetry added auxilary variables should not be removed by simplification.", false);
-BoolOption symm_break_shatter("SYMMETRY", "symm-shatter", "Break symmetries via emulating shatter.", false);
-BoolOption symm_break_chaining_imp("SYMMETRY", "symm-chain", "Break symmetries via implication chaining SBPs", false);
-BoolOption symm_eq_aux("SYMMETRY", "symm-eq-aux", "Use equality table auxiliary variables", false);
-BoolOption symm_dynamic("SYMMETRY", "symm-dynamic", "Add the symmetry breaking clauses dynamically", false);
 
 //=================================================================================================
 // Constructor/Destructor:
@@ -98,7 +92,7 @@ Var SimpSolver::newVar(lbool upol, bool dvar) {
     return v; }
 
 Var SimpSolver::newSymmAuxVar() {
-    Var v = Solver::newVar(l_Undef, symm_aux_decide);
+    Var v = Solver::newSymmAuxVar();
 
     frozen    .insert(v, (char)symm_aux_freeze);
     eliminated.insert(v, (char)false);

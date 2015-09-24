@@ -143,7 +143,10 @@ class Clause {
         unsigned learnt    : 1;
         unsigned has_extra : 1;
         unsigned reloced   : 1;
-        unsigned size      : 27;  }                        header;
+        unsigned isSBP        : 1;
+        unsigned propagated   : 1;
+        unsigned resAnal      : 1;        
+        unsigned size      : 24;  }                        header;
     union { Lit lit; float act; uint32_t abs; CRef rel; } data[0];
 
     friend class ClauseAllocator;
@@ -184,9 +187,6 @@ class Clause {
     }
 
 public:
-   unsigned int numPropagations;
-   int firstPropagation;
-   bool isSBP; 
     void calcAbstraction() {
         assert(header.has_extra);
         uint32_t abstraction = 0;
@@ -219,6 +219,14 @@ public:
 
     Lit          subsumes    (const Clause& other) const;
     void         strengthen  (Lit p);
+    void setIsSBP(bool SBP) {if(SBP) header.isSBP = 1 ; else header.isSBP = 0;}
+    void setPropagated(bool prop) {if(prop) header.propagated = 1 ; else header.propagated = 0;}
+    void setResAnal(bool resAnal){if(resAnal) header.resAnal = 1 ; else header.resAnal = 0;}
+    bool getIsSBP() {return header.isSBP;}
+    bool getPropagated() {return header.propagated;}
+    bool getResAnal(){return header.resAnal;}
+
+
 };
 
 

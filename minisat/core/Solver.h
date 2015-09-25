@@ -28,6 +28,7 @@ OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWA
 #include "minisat/utils/Options.h"
 #include "minisat/core/SolverTypes.h"
 #include "minisat/core/Symm.h"
+#include "minisat/utils/ds.h"
 
 extern Minisat::StringOption symmetry;
 extern Minisat::BoolOption symm_eq_table;
@@ -68,6 +69,15 @@ public:
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
     Var     newSymmAuxVar();
     void    printSBPStats();
+    int addInitChainingSBP(unsigned int x_0, int f_x_0);//A function that adds the first conjunct for the chaining SBPs
+    void addEq(long int l1, long int l2);
+    unsigned int NumNaiveEqs = 0;
+    unsigned int NumEqs = 0;
+    PARRAY* eqs;
+    void initVarEqs();
+    void cleanVarEqs();
+    bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
+    unsigned int addEqAuxVars(unsigned int v, int l);
 
     // Solving:
     //

@@ -362,6 +362,7 @@ void Solver::analyze(CRef confl, vec<Lit>& out_learnt, int& out_btlevel)
                 out_learnt[j++] = out_learnt[i];
             else{
                 Clause& c = ca[reason(var(out_learnt[i]))];
+                c.setResAnal(true);
                 for (int k = 1; k < c.size(); k++)
                     if (!seen[var(c[k])] && level(var(c[k])) > 0){
                         out_learnt[j++] = out_learnt[i];
@@ -1163,9 +1164,6 @@ bool Solver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   return ok;
 }
 
-
-
-
 void Solver::printSBPStats()
 {
   int i = 0 ;
@@ -1242,3 +1240,167 @@ void Solver::printSBPStats()
   unResAnalNoSBP);
   printf("clauses.size() = %d num_clauses=%d, \n", clauses.size(), nClauses());
 }
+
+int Solver::addInitChainingSBP(unsigned int x0, int f_x0)
+  {
+    this->newSymmAuxVar();
+    int p0 = this->nVars() - 1;
+    if(symm_eq_aux)
+      {
+        unsigned int eps1 = this->addEqAuxVars(x0, f_x0);
+        addClause(mkLit(eps1), true);
+        addClause(~mkLit(eps1 + 1), mkLit(p0), true);
+      }
+    else
+      {
+        if(f_x0 > 0)
+          addClause(~mkLit(x0-1), mkLit(f_x0 - 1), true);
+        else
+          addClause(~mkLit(x0-1), ~mkLit(abs(f_x0) - 1), true);
+        addClause(~mkLit(x0-1), mkLit(p0), true);
+        if(f_x0 > 0)
+          addClause(mkLit(f_x0 - 1), mkLit(p0), true);
+        else
+          addClause(~mkLit(abs(f_x0) - 1), mkLit(p0), true);
+      }
+    return p0;
+  }
+
+void Solver::initVarEqs()
+  {
+    this->eqs = (PARRAY*) malloc((this->nVars() + 1) * sizeof(int*) );
+    int i = 0 ;
+    for( i = 0 ; i <= this->nVars() ; i ++)
+      {
+        this->eqs[i] = paMake(5,5);
+        if (this->eqs[i] == NULL)
+          {
+            printf("Could not init var_eqs, exiting!!\r\n");
+            exit(-1);
+          }
+      }
+  }
+
+void Solver::cleanVarEqs()
+  {
+    int i = 0 ;
+    for( i = 0 ; i <= this->nVars() ; i ++)
+      {
+        paClose(this->eqs[i]);
+      }
+    free(this->eqs);
+  }
+
+void Solver::addEq(long int l1, long int l2)
+  {
+    //printf("Adding equality\n");
+    NumNaiveEqs++;    
+    Minisat::Eq* newEq = (Minisat::Eq*)malloc(sizeof(Eq));
+    newEq -> added = 0;
+    newEq -> defAdded = 0;
+    newEq -> succ = NULL;
+    newEq -> pred = NULL;
+    if(l1 < 0 && l2 > 0)
+      {
+        newEq -> v = l2;
+        newEq -> l = l1;
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[-l1], (void*) newEq);
+        paAdd(this->eqs[l2], (void*) newEq);
+      }
+    else if(l1 > 0 && l2 < 0)
+      {
+        newEq -> v = l1;
+        newEq -> l = l2;
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[l1], (void*) newEq);
+        paAdd(this->eqs[-l2], (void*) newEq);
+      }
+    else
+      {
+        newEq -> v = abs(l1);
+        newEq -> l = abs(l2);
+        // printf("Added eqs: %d\n", NumEqs);
+        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
+        int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
+        if(eq_idx >= 0)
+          {
+            free(newEq);
+            return;
+          }
+        paAdd(this->eqs[abs(l1)], newEq);
+        paAdd(this->eqs[abs(l2)], newEq);
+      }
+    NumEqs++;
+    /* printf("Adding %ld %ld\n", l1, l2); */
+    /* printf("eq_idx1 = %d eq_idx2 = %d\n", eq_idx1, eq_idx2); */
+  }
+
+bool Solver::constructEqTable(int* perm, unsigned int* support, unsigned int nsupport)
+ {
+   unsigned int i = 0;
+   for( i = 0 ; i < nsupport ; i++)
+     this->addEq(support[i], perm[support[i]]);   
+ }
+
+// Add the definitions of the auxiliary variables representing the maping v->l to the formula and return the IDs of the corresponding cnf vars
+unsigned int Solver::addEqAuxVars(unsigned int v, int l)
+  {
+    Minisat::Eq* tempEq = (Minisat::Eq*)malloc(sizeof(Eq));
+    tempEq -> added = 0;
+    tempEq -> defAdded = 0;
+    tempEq -> succ = NULL;
+    tempEq -> pred = NULL;
+    tempEq -> v = v;
+    tempEq -> l = l;
+    int eq_idx = paContains(this->eqs[v], eqCmp, (void*) tempEq);
+    if (eq_idx < 0)
+      {
+        printf("Problem with eq table, exiting!!\n");
+        exit(-1);
+      }
+    free(tempEq);
+    tempEq = (Minisat::Eq*)paElementAt(this->eqs[v], eq_idx);
+    // Adding the definitions of the aux var if they are not there already
+    if(!tempEq->defAdded)
+      {
+        //printf("Adding eq aux vars and their defining clauses\n");
+        this->newSymmAuxVar();
+        tempEq->cnfVarID = this->nVars() - 1;
+        //Var1 def clause
+        if(l > 0)
+          addClause(~mkLit(tempEq->cnfVarID), ~mkLit(v - 1), mkLit(l - 1), true);
+        else
+          addClause(~mkLit(tempEq->cnfVarID), ~mkLit(v - 1), ~mkLit(abs(l) - 1), true);
+
+        this->newSymmAuxVar();
+
+        //Var2 def clause 1
+        if(l > 0)
+          addClause(mkLit(l - 1), mkLit(tempEq->cnfVarID + 1), true);
+        else
+          addClause(~mkLit(abs(l) - 1), mkLit(tempEq->cnfVarID + 1), true);
+ 
+        //Var2 def clause 2
+        addClause(~mkLit(v - 1), mkLit(tempEq->cnfVarID + 1), true);
+        tempEq->defAdded = 1;
+      }
+    return (tempEq->cnfVarID);
+  }

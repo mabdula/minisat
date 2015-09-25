@@ -69,7 +69,9 @@ public:
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
     Var     newSymmAuxVar();
     void    printSBPStats();
-    int addInitChainingSBP(unsigned int x_0, int f_x_0);//A function that adds the first conjunct for the chaining SBPs
+    int addInitChainingSBP(unsigned int x_0, int f_x_0);
+    int addChainingSBP(unsigned int x, int f_x, int currentP);
+    void addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport);
     void addEq(long int l1, long int l2);
     unsigned int NumNaiveEqs = 0;
     unsigned int NumEqs = 0;

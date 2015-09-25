@@ -60,10 +60,14 @@ namespace Minisat {
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
     bool addSymmetryGenerator(Minisat::Permutation& perm);
     void addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport);
-    void addChainingSBP(int* perm, unsigned int* support, unsigned int nsupport);
-    void addEq(long int l1, long int l2);
+    int addInitChainingSBP(unsigned int x_0, int f_x_0);
+    int addChainingSBP(unsigned int x, int f_x, int currentP);
+    void addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport);
     unsigned int nSymmetries;
     Permutation* symmetries;
+    void addEq(long int l1, long int l2);
+    unsigned int NumNaiveEqs = 0;
+    unsigned int NumEqs = 0;
     PARRAY* eqs;
     void initVarEqs();
     void cleanVarEqs();

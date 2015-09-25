@@ -140,6 +140,14 @@ static void parse_SYMM(gzFile input_stream, Solver& S) {
     StreamBuffer in(input_stream);
     parse_SYMM_main(in, S); }
 }
+
+inline int eqCmp(void* eq1, void* eq2)
+  {
+    // printf("%ld\n", (long int)eq1);
+    // printf("%d->%d, %d->%d\n", ((Minisat::Eq*)eq1)->v, ((Minisat::Eq*)eq1)->l, ((Minisat::Eq*)eq2)->v, ((Minisat::Eq*)eq2)->l);
+    return (((Minisat::Eq*)eq1)->v == ((Minisat::Eq*)eq2)->v && ((Minisat::Eq*)eq1)->l == ((Minisat::Eq*)eq2)->l );
+  }
+
 //=================================================================================================
 
 #endif

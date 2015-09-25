@@ -123,9 +123,8 @@ int main(int argc, char** argv)
             printf("|  #clauses after SBPs:  %12d                                         |\n", S.nClauses()); }
           if (S.verbosity > 0)
             printf("|  Symmetry parse time:  %12.2f s                                       |\n", symmetry_parsed_time - parsed_time);
-          extern unsigned int NumEqs;
           if (symm_eq_aux || symm_dynamic)
-            printf("|  Equalities added   :  %12d                                         |\n", NumEqs);
+            printf("|  Equalities added   :  %12d                                         |\n", S.NumEqs);
         }
 
         // Change to signal-handlers that will only notify the solver and allow it to terminate

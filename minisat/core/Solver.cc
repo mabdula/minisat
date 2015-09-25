@@ -1266,6 +1266,49 @@ int Solver::addInitChainingSBP(unsigned int x0, int f_x0)
     return p0;
   }
 
+int Solver::addChainingSBP(unsigned int x, int f_x, int currentP)
+  {
+    //TODO: stop on phase shifts
+    this->newSymmAuxVar();
+    int nextP = this->nVars() - 1;
+    if(symm_eq_aux)
+      {
+        unsigned int eqAuxVarID = this->addEqAuxVars(x, f_x);
+        addClause(~mkLit(currentP), mkLit(eqAuxVarID), true);
+        addClause(~mkLit(currentP), ~mkLit(eqAuxVarID + 1), mkLit(nextP), true);
+      }
+    //printf("ThisVar = %d NextVar = %d\r\n", currentP, nextP);
+    else
+      {
+        if(f_x > 0)
+          addClause(~mkLit(currentP), ~mkLit(x-1), mkLit(f_x - 1), true);
+        else
+          addClause(~mkLit(currentP), ~mkLit(x-1), ~mkLit(abs(f_x) - 1), true);
+        if(f_x > 0)
+          addClause(~mkLit(currentP), mkLit(f_x - 1), mkLit(nextP), true);
+        else
+          addClause(~mkLit(currentP), ~mkLit(abs(f_x) - 1), mkLit(nextP), true);
+        addClause(~mkLit(currentP), ~mkLit(x-1), mkLit(nextP), true);
+      }
+    return nextP;
+  }
+
+
+void Solver::addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport)
+  {
+    //printf("Adding chaining SBP clauses\n");
+    unsigned int i = 0 ;
+    int p0 = addInitChainingSBP(support[0], perm[support[0]]);
+    int currentP = p0;
+
+    for (i = 1; i < nsupport; ++i)
+      {
+        currentP = addChainingSBP(support[i], perm[support[i]], currentP);
+      }
+    //printf("Added chaining SBP clauses\n");
+  }
+
+
 void Solver::initVarEqs()
   {
     this->eqs = (PARRAY*) malloc((this->nVars() + 1) * sizeof(int*) );

@@ -756,78 +756,74 @@ bool SimpSolver::addSymmetryGenerator(vec<vec<Lit> >& generator) {
   return Solver::addSymmetryGenerator(generator);
 }
 
+int SimpSolver::addInitShatterSBP(unsigned int x0, int f_x0){
+  this->newSymmAuxVar();
+  int p0 = this->nVars() - 1;
+  if(symm_eq_aux)
+    {
+      unsigned int eqAuxVarID = this->addEqAuxVars(x0, f_x0);
+      addClause(mkLit(eqAuxVarID), true);
+      addClause(mkLit(p0), true);
+    }
+  else
+    {
+      if(f_x0 > 0)
+        addClause(~mkLit(x0-1), mkLit(f_x0 - 1), true);
+      else
+        addClause(~mkLit(x0-1), ~mkLit(abs(f_x0) - 1), true);
+      addClause(mkLit(p0), true);
+    }
+  return p0;
+}
 
-void SimpSolver::addShatterSBP(int* perm, unsigned int* support, unsigned int nsupport)
+int SimpSolver::addShatterSBP(unsigned int prevX, int f_prevX, unsigned int currentX, int f_currentX, int currentP){
+  this->newSymmAuxVar();
+  int nextP = this->nVars() - 1;
+  if(symm_eq_aux){
+    unsigned int prevEqAuxVarID = this->addEqAuxVars(prevX, f_prevX);
+    unsigned int currentEqAuxVarID = this->addEqAuxVars(currentX, f_currentX);
+    //printf("debug: %d %d\n", currentP, prevEqAuxVarID + 1);
+    addClause(~mkLit(currentP), ~mkLit(prevEqAuxVarID + 1), mkLit(currentEqAuxVarID), true);
+    addClause(~mkLit(currentP), ~mkLit(prevEqAuxVarID + 1), mkLit(nextP), true);            
+  }
+  else{
+    if(f_currentX > 0)
+      addClause(~mkLit(currentP), ~mkLit((int)prevX-1), ~mkLit((int)(currentX-1)), mkLit(f_currentX - 1), true);
+    else
+      addClause(~mkLit(currentP), ~mkLit((int)prevX-1), ~mkLit((int)(currentX-1)), ~mkLit(abs(f_currentX) - 1), true);
+    addClause(~mkLit(currentP), ~mkLit((int)prevX-1), mkLit(nextP), true);            
+    vec<Lit> clause3;
+    clause3.clear();
+    clause3.push(~mkLit(currentP));
+    if(f_prevX > 0)
+      clause3.push( mkLit(f_prevX - 1));
+    else
+      clause3.push(~mkLit(abs(f_prevX) - 1));
+    clause3.push(~mkLit((int)currentX - 1));
+    if(f_currentX > 0)
+      clause3.push( mkLit(f_currentX - 1));
+    else
+      clause3.push(~mkLit(abs(f_currentX) - 1));
+    this->addClause_(clause3, true);
+    if(f_currentX > 0)
+      addClause(~mkLit(currentP), mkLit(f_prevX - 1), mkLit(nextP), true);
+    else
+      addClause(~mkLit(currentP), ~mkLit(abs(f_prevX) - 1), mkLit(nextP), true);
+  }
+  return nextP;
+}
+
+
+void SimpSolver::addAllShatterSBPs(int* perm, unsigned int* support, unsigned int nsupport)
   {
+    int p0 = this->addInitShatterSBP(support[0], perm[support[0]]);
     //printf("Adding shatter SBP clauses\n");
     unsigned int i = 0 ;
-    this->newSymmAuxVar();
-    int p0 = this->nVars() - 1;
-    if(symm_eq_aux)
-      {
-        unsigned int eqAuxVarID = this->addEqAuxVars(support[0], perm[support[0]]);
-        addClause(mkLit(eqAuxVarID), true);
-        addClause(mkLit(p0), true);
-      }
-    else
-      {
-        if(perm[support[0]] > 0)
-          addClause(~mkLit(support[0]-1), mkLit(perm[support[0]] - 1), true);
-        else
-          addClause(~mkLit(support[0]-1), ~mkLit(abs(perm[support[0]]) - 1), true);
-        addClause(mkLit(p0), true);
-      }
-
-    int thisP = p0;
+    int currentP = p0;
     for (i = 1; i < nsupport; ++i)
       {
-
-    	/* again, terminate at phase shift */
-
-    	/* if (p[x] == -x) { */
-    	/* 	clause(-vars, -z, -x, 0); */
-    	/* 	clause(-vars, p[z], -x, 0); */
-    	/* 	break; */
-    	/* } */
-        //printf("ThisVar = %d NextVar = %d\r\n", thisP, nextP);
-        this->newSymmAuxVar();
-        int nextP = this->nVars() - 1;
-
-        if(symm_eq_aux)
-          {
-            unsigned int prevEqAuxVarID = this->addEqAuxVars(support[i-1], perm[support[i-1]]);
-            unsigned int currentEqAuxVarID = this->addEqAuxVars(support[i], perm[support[i]]);
-            //printf("debug: %d %d\n", thisP, prevEqAuxVarID + 1);
-            addClause(~mkLit(thisP), ~mkLit(prevEqAuxVarID + 1), mkLit(currentEqAuxVarID), true);
-            addClause(~mkLit(thisP), ~mkLit(prevEqAuxVarID + 1), mkLit(nextP), true);            
-          }
-        else
-          {
-            if(perm[support[i]] > 0)
-              addClause(~mkLit(thisP), ~mkLit((int)support[i-1]-1), ~mkLit((int)(support[i]-1)), mkLit(perm[support[i]] - 1), true);
-            else
-              addClause(~mkLit(thisP), ~mkLit((int)support[i-1]-1), ~mkLit((int)(support[i]-1)), ~mkLit(abs(perm[support[i]]) - 1), true);
-            addClause(~mkLit(thisP), ~mkLit((int)support[i-1]-1), mkLit(nextP), true);            
-            vec<Lit> clause3;
-            clause3.clear();
-            clause3.push(~mkLit(thisP));
-            if(perm[support[i-1]] > 0)
-              clause3.push( mkLit(perm[support[i-1]] - 1));
-            else
-              clause3.push(~mkLit(abs(perm[support[i-1]]) - 1));
-            clause3.push(~mkLit((int)support[i] - 1));
-            if(perm[support[i]] > 0)
-              clause3.push( mkLit(perm[support[i]] - 1));
-            else
-              clause3.push(~mkLit(abs(perm[support[i]]) - 1));
-            this->addClause_(clause3, true);
-
-            if(perm[support[i]] > 0)
-              addClause(~mkLit(thisP), mkLit(perm[support[i - 1]] - 1), mkLit(nextP), true);
-            else
-              addClause(~mkLit(thisP), ~mkLit(abs(perm[support[i - 1]]) - 1), mkLit(nextP), true);
-          }
-        thisP = nextP ;
+        int nextP = this->addShatterSBP(support[i-1], perm[support[i-1]], support[i], perm[support[i]], currentP);
+        currentP = nextP ;
       }
     //printf("Added shatter SBP clauses\n");
   }
@@ -1044,7 +1040,7 @@ bool SimpSolver::addSymmetryGenerator(Minisat::Permutation& perm) {
   if(symm_eq_aux || symm_dynamic)
     this->constructEqTable(perm.f, perm.dom, perm.domSize);
   if(symm_break_shatter)
-    addShatterSBP(perm.f, perm.dom, perm.domSize);
+    addAllShatterSBPs(perm.f, perm.dom, perm.domSize);
   else if(symm_break_chaining_imp)
     addAllChainingSBPs(perm.f, perm.dom, perm.domSize);
   return ok;

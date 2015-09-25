@@ -1241,6 +1241,78 @@ void Solver::printSBPStats()
   printf("clauses.size() = %d num_clauses=%d, \n", clauses.size(), nClauses());
 }
 
+int Solver::addInitShatterSBP(unsigned int x0, int f_x0){
+  this->newSymmAuxVar();
+  int p0 = this->nVars() - 1;
+  if(symm_eq_aux)
+    {
+      unsigned int eqAuxVarID = this->addEqAuxVars(x0, f_x0);
+      addClause(mkLit(eqAuxVarID), true);
+      addClause(mkLit(p0), true);
+    }
+  else
+    {
+      if(f_x0 > 0)
+        addClause(~mkLit(x0-1), mkLit(f_x0 - 1), true);
+      else
+        addClause(~mkLit(x0-1), ~mkLit(abs(f_x0) - 1), true);
+      addClause(mkLit(p0), true);
+    }
+  return p0;
+}
+
+int Solver::addShatterSBP(unsigned int prevX, int f_prevX, unsigned int currentX, int f_currentX, int currentP){
+  this->newSymmAuxVar();
+  int nextP = this->nVars() - 1;
+  if(symm_eq_aux){
+    unsigned int prevEqAuxVarID = this->addEqAuxVars(prevX, f_prevX);
+    unsigned int currentEqAuxVarID = this->addEqAuxVars(currentX, f_currentX);
+    //printf("debug: %d %d\n", currentP, prevEqAuxVarID + 1);
+    addClause(~mkLit(currentP), ~mkLit(prevEqAuxVarID + 1), mkLit(currentEqAuxVarID), true);
+    addClause(~mkLit(currentP), ~mkLit(prevEqAuxVarID + 1), mkLit(nextP), true);            
+  }
+  else{
+    if(f_currentX > 0)
+      addClause(~mkLit(currentP), ~mkLit((int)prevX-1), ~mkLit((int)(currentX-1)), mkLit(f_currentX - 1), true);
+    else
+      addClause(~mkLit(currentP), ~mkLit((int)prevX-1), ~mkLit((int)(currentX-1)), ~mkLit(abs(f_currentX) - 1), true);
+    addClause(~mkLit(currentP), ~mkLit((int)prevX-1), mkLit(nextP), true);            
+    vec<Lit> clause3;
+    clause3.clear();
+    clause3.push(~mkLit(currentP));
+    if(f_prevX > 0)
+      clause3.push( mkLit(f_prevX - 1));
+    else
+      clause3.push(~mkLit(abs(f_prevX) - 1));
+    clause3.push(~mkLit((int)currentX - 1));
+    if(f_currentX > 0)
+      clause3.push( mkLit(f_currentX - 1));
+    else
+      clause3.push(~mkLit(abs(f_currentX) - 1));
+    this->addClause_(clause3, true);
+    if(f_currentX > 0)
+      addClause(~mkLit(currentP), mkLit(f_prevX - 1), mkLit(nextP), true);
+    else
+      addClause(~mkLit(currentP), ~mkLit(abs(f_prevX) - 1), mkLit(nextP), true);
+  }
+  return nextP;
+}
+
+
+void Solver::addAllShatterSBPs(int* perm, unsigned int* support, unsigned int nsupport)
+  {
+    int p0 = this->addInitShatterSBP(support[0], perm[support[0]]);
+    //printf("Adding shatter SBP clauses\n");
+    unsigned int i = 0 ;
+    int currentP = p0;
+    for (i = 1; i < nsupport; ++i)
+      {
+        int nextP = this->addShatterSBP(support[i-1], perm[support[i-1]], support[i], perm[support[i]], currentP);
+        currentP = nextP ;
+      }
+    //printf("Added shatter SBP clauses\n");
+  }
+
 int Solver::addInitChainingSBP(unsigned int x0, int f_x0)
   {
     this->newSymmAuxVar();

@@ -69,6 +69,9 @@ public:
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
     Var     newSymmAuxVar();
     void    printSBPStats();
+    int addInitShatterSBP(unsigned int x0, int f_x0);
+    int addShatterSBP(unsigned int prevX, int f_prevX, unsigned int currentX, int f_currentX, int currentP);
+    void addAllShatterSBPs(int* perm, unsigned int* support, unsigned int nsupport);
     int addInitChainingSBP(unsigned int x_0, int f_x_0);
     int addChainingSBP(unsigned int x, int f_x, int currentP);
     void addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport);

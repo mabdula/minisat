@@ -897,31 +897,6 @@ void SimpSolver::addAllChainingSBPs(int* perm, unsigned int* support, unsigned i
     //printf("Added chaining SBP clauses\n");
   }
 
-void SimpSolver::initVarEqs()
-  {
-    this->eqs = (PARRAY*) malloc((this->nVars() + 1) * sizeof(int*) );
-    int i = 0 ;
-    for( i = 0 ; i <= this->nVars() ; i ++)
-      {
-        this->eqs[i] = paMake(5,5);
-        if (this->eqs[i] == NULL)
-          {
-            printf("Could not init var_eqs, exiting!!\r\n");
-            exit(-1);
-          }
-      }
-  }
-
-void SimpSolver::cleanVarEqs()
-  {
-    int i = 0 ;
-    for( i = 0 ; i <= this->nVars() ; i ++)
-      {
-        paClose(this->eqs[i]);
-      }
-    free(this->eqs);
-  }
-
 void SimpSolver::addEq(long int l1, long int l2)
   {
     //printf("Adding equality\n");

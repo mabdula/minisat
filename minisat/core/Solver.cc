@@ -1383,6 +1383,7 @@ void Solver::addAllChainingSBPs(int* perm, unsigned int* support, unsigned int n
 
 void Solver::initVarEqs()
   {
+    printf("Solver nVars() = %d\n",this->nVars());
     this->eqs = (PARRAY*) malloc((this->nVars() + 1) * sizeof(int*) );
     int i = 0 ;
     for( i = 0 ; i <= this->nVars() ; i ++)

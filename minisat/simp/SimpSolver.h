@@ -70,9 +70,6 @@ namespace Minisat {
     void addEq(long int l1, long int l2);
     unsigned int NumNaiveEqs = 0;
     unsigned int NumEqs = 0;
-    PARRAY* eqs;
-    void initVarEqs();
-    void cleanVarEqs();
     bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
     unsigned int addEqAuxVars(unsigned int v, int l);
     // Variable mode:

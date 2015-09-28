@@ -92,9 +92,7 @@ Var SimpSolver::newVar(lbool upol, bool dvar) {
     return v; }
 
 Var SimpSolver::newSymmAuxVar() {
-    printf("aa\n");
     Var v = Solver::newSymmAuxVar();
-    printf("bb\n");
     frozen    .insert(v, (char)symm_aux_freeze);
     eliminated.insert(v, (char)false);
   
@@ -116,7 +114,7 @@ void SimpSolver::releaseVar(Lit l)
         Solver::releaseVar(l);
     else
         // Otherwise, don't allow variable to be reused.
-        Solver::addClause(l);
+        Solver::addClause(l, false);
 }
 
 
@@ -162,7 +160,7 @@ lbool SimpSolver::solve_(bool do_simp, bool turn_off_simp)
 
 
 
-bool SimpSolver::addClause_(vec<Lit>& ps, bool SBP = false)
+bool SimpSolver::addClause_(vec<Lit>& ps, bool SBP)
 {
     // for (int i = 0; i < ps.size(); i++)
     //   printf("%d ", ps[i].x);
@@ -550,7 +548,7 @@ bool SimpSolver::eliminateVar(Var v)
     vec<Lit>& resolvent = add_tmp;
     for (int i = 0; i < pos.size(); i++)
         for (int j = 0; j < neg.size(); j++)
-            if (merge(ca[pos[i]], ca[neg[j]], v, resolvent) && !addClause_(resolvent))
+            if (merge(ca[pos[i]], ca[neg[j]], v, resolvent) && !addClause_(resolvent, false))
                 return false;
 
     // Free occurs list for this variable:
@@ -588,7 +586,7 @@ bool SimpSolver::substitute(Var v, Lit x)
 
         removeClause(cls[i]);
 
-        if (!addClause_(subst_clause))
+        if (!addClause_(subst_clause, false))
             return ok = false;
     }
 

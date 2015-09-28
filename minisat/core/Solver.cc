@@ -106,6 +106,8 @@ Solver::Solver() :
   , conflict_budget    (-1)
   , propagation_budget (-1)
   , asynch_interrupt   (false)
+  , NumNaiveEqs(0)
+  , NumEqs(0)
 {}
 
 
@@ -154,13 +156,13 @@ Var Solver::newSymmAuxVar() {
 void Solver::releaseVar(Lit l)
 {
     if (value(l) == l_Undef){
-        addClause(l);
+      addClause(l, false);
         released_vars.push(var(l));
     }
 }
 
 
-bool Solver::addClause_(vec<Lit>& ps, bool SBP = false)
+bool Solver::addClause_(vec<Lit>& ps, bool SBP)
 {
     assert(decisionLevel() == 0);
     if (!ok) return false;

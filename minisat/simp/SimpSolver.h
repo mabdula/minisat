@@ -196,10 +196,10 @@ inline void SimpSolver::updateElimHeap(Var v) {
 
 inline bool SimpSolver::addClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return Solver::addClause_(add_tmp); }
 inline bool SimpSolver::addEmptyClause()                     { add_tmp.clear(); return Solver::addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p, bool SBP = false)                 { add_tmp.clear(); add_tmp.push(p); return SimpSolver::addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, bool SBP = false)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return SimpSolver::addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, bool SBP = false)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return SimpSolver::addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s, bool SBP = false){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, bool SBP)                 { add_tmp.clear(); add_tmp.push(p); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, bool SBP)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, bool SBP)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s, bool SBP){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return SimpSolver::addClause_(add_tmp, SBP); }
 inline void SimpSolver::setFrozen    (Var v, bool b) { frozen[v] = (char)b; if (use_simplification && !b) { updateElimHeap(v); } }
 
 inline void SimpSolver::freezeVar(Var v){

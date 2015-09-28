@@ -54,10 +54,13 @@ paMake(int init_size,int grow_by)
     PArray *	parray;
 
     /* Allocate the PArray structure */
-    STDMALLOC(parray,sizeof(PArray),NULL);
-
+    parray = (PArray*)malloc(sizeof(PArray));
+    if(parray == NULL)
+      return parray;
     /* Allocate enough space for init_size elements */
-    STDMALLOC(parray->elements,sizeof(void*) * init_size,NULL);
+    parray->elements = (void**)malloc (sizeof(void*) * init_size);
+    if(parray->elements == NULL)
+      return parray;
 
     parray->num_elems = 0;
     parray->curr_size = init_size;
@@ -97,8 +100,9 @@ pa_grow(PArray *parray)
     if (parray->num_elems < parray->curr_size)
 	return 0;   /* Still space available */
 
-    STDREALLOC(parray->elements,sizeof(void*) * new_size,-1);
-
+    parray->elements = (void**)realloc(parray->elements, sizeof(void*) * new_size);
+    if(parray->elements == NULL)
+      return -1;
     parray->curr_size = new_size;
 
     return 0;
@@ -108,7 +112,9 @@ pa_shrink(PArray *parray)
 {
     int new_size = parray->curr_size - parray->grow_by;
 
-    STDREALLOC(parray->elements,sizeof(void*) * new_size,-1);
+    parray->elements = (void**)realloc(parray->elements, sizeof(void*) * new_size);
+    if(parray->elements == NULL)
+      return -1;
 
     parray->curr_size = new_size;
 

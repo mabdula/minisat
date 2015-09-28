@@ -77,8 +77,8 @@ public:
     int addChainingSBP(unsigned int x, int f_x, int currentP);
     void addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport);
     void addEq(long int l1, long int l2);
-    unsigned int NumNaiveEqs = 0;
-    unsigned int NumEqs = 0;
+    unsigned int NumNaiveEqs;
+    unsigned int NumEqs;
     PARRAY* eqs;
     void initVarEqs();
     void cleanVarEqs();
@@ -366,10 +366,10 @@ inline void Solver::checkGarbage(double gf){
 inline bool     Solver::enqueue         (Lit p, CRef from)      { return value(p) != l_Undef ? value(p) != l_False : (uncheckedEnqueue(p, from), true); }
 inline bool     Solver::addClause       (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return addClause_(add_tmp); }
 inline bool     Solver::addEmptyClause  ()                      { add_tmp.clear(); return addClause_(add_tmp); }
-inline bool     Solver::addClause       (Lit p, bool SBP = false)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp, SBP); }
-inline bool     Solver::addClause       (Lit p, Lit q, bool SBP = false)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp, SBP); }
-inline bool     Solver::addClause       (Lit p, Lit q, Lit r, bool SBP = false)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return addClause_(add_tmp, SBP); }
-inline bool     Solver::addClause       (Lit p, Lit q, Lit r, Lit s, bool SBP = false){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return addClause_(add_tmp, SBP); }
+inline bool     Solver::addClause       (Lit p, bool SBP)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp, SBP); }
+inline bool     Solver::addClause       (Lit p, Lit q, bool SBP)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp, SBP); }
+inline bool     Solver::addClause       (Lit p, Lit q, Lit r, bool SBP)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return addClause_(add_tmp, SBP); }
+inline bool     Solver::addClause       (Lit p, Lit q, Lit r, Lit s, bool SBP){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return addClause_(add_tmp, SBP); }
 
 inline bool     Solver::isRemoved       (CRef cr)         const { return ca[cr].mark() == 1; }
 inline bool     Solver::locked          (const Clause& c) const { return value(c[0]) == l_True && reason(var(c[0])) != CRef_Undef && ca.lea(reason(var(c[0]))) == &c; }

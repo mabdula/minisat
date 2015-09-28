@@ -118,7 +118,7 @@ int main(int argc, char** argv)
           gzFile symm_in = gzopen(symmetry, "rb");
           parse_SYMM(symm_in, S);
           gzclose(symm_in);
-          printf("|  Number of symmetries:%12d                                           |\n", S.nSymmetries);
+          printf("|  Number of symmetries:%12d                                          |\n", S.nSymmetries);
           if (S.verbosity > 0){
             printf("|  #variables after SBPs:%12d                                         |\n", S.nVars());
             printf("|  #clauses after SBPs:  %12d                                         |\n", S.nClauses()); }

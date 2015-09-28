@@ -80,10 +80,13 @@ public:
     unsigned int NumNaiveEqs;
     unsigned int NumEqs;
     PARRAY* eqs;
+    PARRAY* watchedEqs;
     void initVarEqs();
     void cleanVarEqs();
     bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
     unsigned int addEqAuxVars(unsigned int v, int l);
+    unsigned int nSymmetries;
+    Permutation* symmetries;
 
     // Solving:
     //

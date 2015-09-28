@@ -59,8 +59,6 @@ namespace Minisat {
 
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
     bool addSymmetryGenerator(Minisat::Permutation& perm){return Solver::addSymmetryGenerator(perm);}
-    unsigned int nSymmetries;
-    Permutation* symmetries;
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.

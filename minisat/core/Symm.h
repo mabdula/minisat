@@ -113,6 +113,7 @@ template<class B, class Solver>
 static void parse_SYMM_main(B& in, Solver& S) {
     //printf("Starting to parse perm\r\n");
     /* Permutation* perm2 = new Permutation; */
+    S.nSymmetries = parseInt(in);
     Permutation perm;
     perm.f = (int*)malloc(sizeof(int) * (S.nVars() + 1));
     perm.domSize = 0;

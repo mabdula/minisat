@@ -145,8 +145,9 @@ Var Solver::newVar(lbool upol, bool dvar)
 }
 
 Var Solver::newSymmAuxVar() {
-    Var v = newVar(l_Undef, symm_aux_decide);
-    return v; }
+    Var v = Solver::newVar(l_Undef, symm_aux_decide);
+    return v;
+}
 
 // Note: at the moment, only unassigned variable will be released (this is to avoid duplicate
 // releases of the same variable).
@@ -1194,6 +1195,8 @@ void Solver::printSBPStats()
             untouchedSBP++;
           if(!ca[clauses[i]].getResAnal())
             unResAnalSBP++;
+          else
+            
           // if(ca[clauses[i]].firstPropagation <  minSBPFirstPropagation)
           //   minSBPFirstPropagation = ca[clauses[i]].firstPropagation;
           // avgSBPFirstPropagation += ca[clauses[i]].firstPropagation;
@@ -1520,3 +1523,13 @@ unsigned int Solver::addEqAuxVars(unsigned int v, int l)
       }
     return (tempEq->cnfVarID);
   }
+
+bool Solver::addSymmetryGenerator(Minisat::Permutation& perm) {
+  if(symm_eq_aux || symm_dynamic)
+    this->constructEqTable(perm.f, perm.dom, perm.domSize);
+  if(symm_break_shatter)
+    addAllShatterSBPs(perm.f, perm.dom, perm.domSize);
+  else if(symm_break_chaining_imp)
+    addAllChainingSBPs(perm.f, perm.dom, perm.domSize);
+  return ok;
+}

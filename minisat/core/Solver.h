@@ -57,17 +57,18 @@ public:
 
     bool    addClause (const vec<Lit>& ps);                     // Add a clause to the solver. 
     bool    addEmptyClause();                                   // Add the empty clause, making the solver contradictory.
-    bool    addClause (Lit p, bool SBP = false);                                  // Add a unit clause to the solver. 
-    bool    addClause (Lit p, Lit q, bool SBP = false);                           // Add a binary clause to the solver. 
-    bool    addClause (Lit p, Lit q, Lit r, bool SBP = false);                    // Add a ternary clause to the solver. 
-    bool    addClause (Lit p, Lit q, Lit r, Lit s, bool SBP = false);             // Add a quaternary clause to the solver. 
-    bool    addClause_(      vec<Lit>& ps, bool SBP = false);                     // Add a clause to the solver without making superflous internal copy. Will
+    virtual bool    addClause (Lit p, bool SBP = false);                                  // Add a unit clause to the solver. 
+    virtual bool    addClause (Lit p, Lit q, bool SBP = false);                           // Add a binary clause to the solver. 
+    virtual bool    addClause (Lit p, Lit q, Lit r, bool SBP = false);                    // Add a ternary clause to the solver. 
+    virtual bool    addClause (Lit p, Lit q, Lit r, Lit s, bool SBP = false);             // Add a quaternary clause to the solver. 
+    virtual bool    addClause_(      vec<Lit>& ps, bool SBP = false);                     // Add a clause to the solver without making superflous internal copy. Will
                                                                 // change the passed vector 'ps'.
 
     // Symmetry specification
     //
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
-    Var     newSymmAuxVar();
+    bool    addSymmetryGenerator(Minisat::Permutation& perm);
+    virtual Var     newSymmAuxVar();
     void    printSBPStats();
     int addInitShatterSBP(unsigned int x0, int f_x0);
     int addShatterSBP(unsigned int prevX, int f_prevX, unsigned int currentX, int f_currentX, int currentP);

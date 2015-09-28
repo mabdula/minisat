@@ -42,36 +42,25 @@ namespace Minisat {
 
     // Problem specification:
     //
-    Var     newVar    (lbool upol = l_Undef, bool dvar = true);
+    virtual Var     newVar    (lbool upol = l_Undef, bool dvar = true);
     void    releaseVar(Lit l);
     bool    addClause (const vec<Lit>& ps);
     bool    addEmptyClause();                // Add the empty clause to the solver.
-    bool    addClause (Lit p, bool SBP = false);               // Add a unit clause to the solver.
-    bool    addClause (Lit p, Lit q, bool SBP = false);        // Add a binary clause to the solver.
-    bool    addClause (Lit p, Lit q, Lit r, bool SBP = false); // Add a ternary clause to the solver.
-    bool    addClause (Lit p, Lit q, Lit r, Lit s, bool SBP = false); // Add a quaternary clause to the solver. 
-    bool    addClause_(      vec<Lit>& ps, bool SBP = false);
+    virtual bool    addClause (Lit p, bool SBP = false);               // Add a unit clause to the solver.
+    virtual bool    addClause (Lit p, Lit q, bool SBP = false);        // Add a binary clause to the solver.
+    virtual bool    addClause (Lit p, Lit q, Lit r, bool SBP = false); // Add a ternary clause to the solver.
+    virtual bool    addClause (Lit p, Lit q, Lit r, Lit s, bool SBP = false); // Add a quaternary clause to the solver. 
+    virtual bool    addClause_(      vec<Lit>& ps, bool SBP = false);
     bool    substitute(Var v, Lit x);  // Replace all occurences of v with x (may cause a contradiction).
 
     // Symmetry specification
     //
-    Var     newSymmAuxVar    ();
+    virtual Var     newSymmAuxVar    ();
 
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
-    bool addSymmetryGenerator(Minisat::Permutation& perm);
-    int addInitShatterSBP(unsigned int x0, int f_x0);
-    int addShatterSBP(unsigned int prevX, int f_prevX, unsigned int currentX, int f_currentX, int currentP);
-    void addAllShatterSBPs(int* perm, unsigned int* support, unsigned int nsupport);
-    int addInitChainingSBP(unsigned int x_0, int f_x_0);
-    int addChainingSBP(unsigned int x, int f_x, int currentP);
-    void addAllChainingSBPs(int* perm, unsigned int* support, unsigned int nsupport);
+    bool addSymmetryGenerator(Minisat::Permutation& perm){return Solver::addSymmetryGenerator(perm);}
     unsigned int nSymmetries;
     Permutation* symmetries;
-    void addEq(long int l1, long int l2);
-    unsigned int NumNaiveEqs = 0;
-    unsigned int NumEqs = 0;
-    bool constructEqTable(int* perm, unsigned int* support, unsigned int nsupport);
-    unsigned int addEqAuxVars(unsigned int v, int l);
     // Variable mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.
@@ -205,12 +194,12 @@ inline void SimpSolver::updateElimHeap(Var v) {
         elim_heap.update(v); }
 
 
-inline bool SimpSolver::addClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return addClause_(add_tmp); }
-inline bool SimpSolver::addEmptyClause()                     { add_tmp.clear(); return addClause_(add_tmp); }
-inline bool SimpSolver::addClause    (Lit p, bool SBP = false)                 { add_tmp.clear(); add_tmp.push(p); return addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, bool SBP = false)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, bool SBP = false)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return addClause_(add_tmp, SBP); }
-inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s, bool SBP = false){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (const vec<Lit>& ps)    { ps.copyTo(add_tmp); return Solver::addClause_(add_tmp); }
+inline bool SimpSolver::addEmptyClause()                     { add_tmp.clear(); return Solver::addClause_(add_tmp); }
+inline bool SimpSolver::addClause    (Lit p, bool SBP = false)                 { add_tmp.clear(); add_tmp.push(p); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, bool SBP = false)          { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, bool SBP = false)   { add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); return SimpSolver::addClause_(add_tmp, SBP); }
+inline bool SimpSolver::addClause    (Lit p, Lit q, Lit r, Lit s, bool SBP = false){ add_tmp.clear(); add_tmp.push(p); add_tmp.push(q); add_tmp.push(r); add_tmp.push(s); return SimpSolver::addClause_(add_tmp, SBP); }
 inline void SimpSolver::setFrozen    (Var v, bool b) { frozen[v] = (char)b; if (use_simplification && !b) { updateElimHeap(v); } }
 
 inline void SimpSolver::freezeVar(Var v){

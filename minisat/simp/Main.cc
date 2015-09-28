@@ -109,15 +109,24 @@ int main(int argc, char** argv)
         if (S.verbosity > 0)
             printf("|  Parse time:           %12.2f s                                       |\n", parsed_time - initial_time);
 
-        // Treat the symetries
-        if (symm_eq_aux || symm_dynamic)
-          S.initVarEqs();
-
         double symmetry_parsed_time = cpuTime();
         if (symmetry != NULL) {
           gzFile symm_in = gzopen(symmetry, "rb");
           parse_SYMM(symm_in, S);
           gzclose(symm_in);
+          // Treat the symetries
+          if (symm_eq_aux || symm_dynamic)
+            S.initVarEqs();
+          //Initialising watched eqs
+          if(symm_dynamic)
+            {
+              S.watchedEqs = (Eq***)malloc(sizeof(void*) * S.nVars());
+              int i = 0 ; 
+              for(i = 0 ; i < S.nVars() ; i++)
+                {
+                  S.watchedEqs[i] = (Eq**)malloc(sizeof(Eq) * S.nSymmetries);
+                }        
+            }
           printf("|  Number of symmetries:%12d                                          |\n", S.nSymmetries);
           if (S.verbosity > 0){
             printf("|  #variables after SBPs:%12d                                         |\n", S.nVars());

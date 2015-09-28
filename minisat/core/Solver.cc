@@ -113,6 +113,14 @@ Solver::Solver() :
 
 Solver::~Solver()
 {
+  if(symm_dynamic){
+    free(watchedEqs);
+    int i = 0 ; 
+    for(i = 0 ; i < this->nVars() ; i++){
+      free(this->watchedEqs[i]);
+    }        
+  free(this->watchedEqs);
+  }
 }
 
 
@@ -1538,6 +1546,60 @@ unsigned int Solver::addEqAuxVars(unsigned int v, int l)
     return (tempEq->cnfVarID);
   }
 
+// This initialises which equality does every variable watch for every permutation.
+void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int nsupport, unsigned int permIdx)
+  {
+    //printf("Adding chaining SBP clauses\n");
+    unsigned int i = 0 ;
+    Minisat::Eq* prevEq = NULL;
+    prevEq = (Minisat::Eq*)malloc(sizeof(Eq));
+    prevEq -> added = 0;
+    prevEq -> defAdded = 0;
+    prevEq -> succ = NULL;
+    prevEq -> pred = NULL;
+    prevEq -> v = support[i] - 1;
+    prevEq -> l = perm[support[i] - 1] - 1;
+    int eq_idx = paContains(this->eqs[prevEq -> v], eqCmp, (void*) prevEq);
+    if (eq_idx < 0)
+      {
+        printf("Problem with eq table, exiting!!\n");
+        exit(-1);
+     }
+    free(prevEq);
+    prevEq = (Minisat::Eq*)paElementAt(this->eqs[prevEq -> v], eq_idx);
+    this->watchedEqs[prevEq -> v][permIdx] = prevEq;
+    this->watchedEqs[abs(prevEq -> l)][permIdx] = prevEq;
+    Minisat::Eq* currentEq = NULL;
+    for (i = 1; i < nsupport; ++i)
+      {
+        currentEq = (Minisat::Eq*)malloc(sizeof(Eq));
+        currentEq -> added = 0;
+        currentEq -> defAdded = 0;
+        currentEq -> succ = NULL;
+        currentEq -> pred = NULL;
+        currentEq -> v = support[i] - 1;
+        currentEq -> l = perm[support[i] - 1] - 1;
+        int eq_idx = paContains(this->eqs[currentEq -> v], eqCmp, (void*) currentEq);
+        if (eq_idx < 0)
+          {
+            printf("Problem with eq table, exiting!!\n");
+            exit(-1);
+          }
+        free(currentEq);
+        currentEq = (Minisat::Eq*)paElementAt(this->eqs[currentEq -> v], eq_idx);
+        ((Minisat::Eq**)(prevEq->succ))[permIdx] = currentEq;
+        ((Minisat::Eq**)(currentEq->pred))[permIdx] = prevEq;
+        prevEq = currentEq;
+      }
+    //testing whether the watched eqs were initialised correctly
+    for(int i = 0 ; i < this-> nVars() ; i++)
+      {
+        printf("%d watches %d->%d", i, (int)this->watchedEqs[i][permIdx]->v, (int)this->watchedEqs[i][permIdx]->l);
+      }
+    
+    //printf("Added chaining SBP clauses\n");
+  }
+
 bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx) {
   if(symm_eq_aux || symm_dynamic)
     this->constructEqTable(perm.f, perm.dom, perm.domSize);
@@ -1551,7 +1613,9 @@ bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permI
   else if(symm_dynamic && symm_break_chaining_imp)
     {
       //Initialise eqs preds and succs
+      initEqWatchStructure(perm.f, perm.dom, perm.domSize, permIdx);
       //Add initial SBPs    
+      this->currentP = addInitChainingSBP(perm.dom[0], perm.f[perm.dom[0]]);
     }
   else if(symm_break_chaining_imp)
     addAllChainingSBPs(perm.f, perm.dom, perm.domSize);

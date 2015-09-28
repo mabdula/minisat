@@ -1419,8 +1419,20 @@ void Solver::addEq(long int l1, long int l2)
     Minisat::Eq* newEq = (Minisat::Eq*)malloc(sizeof(Eq));
     newEq -> added = 0;
     newEq -> defAdded = 0;
-    newEq -> succ = NULL;
-    newEq -> pred = NULL;
+    if(symm_dynamic){
+      newEq -> succ = malloc(sizeof(Minisat::Eq) * this->nSymmetries);
+      unsigned int i = 0;
+      for(i = 0 ; i < this-> nSymmetries ; i++)
+        newEq -> succ = NULL; }
+    else
+      newEq -> succ = NULL;
+    if(symm_dynamic){
+      newEq -> pred = malloc(sizeof(Minisat::Eq) * this->nSymmetries);
+      unsigned int i = 0;
+      for(i = 0 ; i < this-> nSymmetries ; i++)
+        newEq -> pred = NULL; }
+    else
+      newEq -> pred = NULL;
     if(l1 < 0 && l2 > 0)
       {
         newEq -> v = l2;
@@ -1526,11 +1538,21 @@ unsigned int Solver::addEqAuxVars(unsigned int v, int l)
     return (tempEq->cnfVarID);
   }
 
-bool Solver::addSymmetryGenerator(Minisat::Permutation& perm) {
+bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx) {
   if(symm_eq_aux || symm_dynamic)
     this->constructEqTable(perm.f, perm.dom, perm.domSize);
-  if(symm_break_shatter)
+  if(symm_dynamic && symm_break_shatter)
+    {
+      //Initialise eqs preds and succs
+      //Add initial SBPs
+    }
+  else if(symm_break_shatter)
     addAllShatterSBPs(perm.f, perm.dom, perm.domSize);
+  else if(symm_dynamic && symm_break_chaining_imp)
+    {
+      //Initialise eqs preds and succs
+      //Add initial SBPs    
+    }
   else if(symm_break_chaining_imp)
     addAllChainingSBPs(perm.f, perm.dom, perm.domSize);
   return ok;

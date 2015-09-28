@@ -58,8 +58,8 @@ namespace Minisat {
     virtual Var     newSymmAuxVar    ();
 
     bool addSymmetryGenerator(vec<vec<Lit> >& generator);
-    bool addSymmetryGenerator(Minisat::Permutation& perm){return Solver::addSymmetryGenerator(perm);}
-    // Variable mode:
+    bool addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx){return Solver::addSymmetryGenerator(perm, permIdx);}
+    // Variablefo mode:
     // 
     void    setFrozen (Var v, bool b); // If a variable is frozen it will not be eliminated.
     bool    isEliminated(Var v) const;

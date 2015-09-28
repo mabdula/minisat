@@ -67,7 +67,7 @@ public:
     // Symmetry specification
     //
     bool    addSymmetryGenerator(vec<vec<Lit> >& generator);
-    bool    addSymmetryGenerator(Minisat::Permutation& perm);
+    bool    addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx);
     virtual Var     newSymmAuxVar();
     void    printSBPStats();
     int addInitShatterSBP(unsigned int x0, int f_x0);

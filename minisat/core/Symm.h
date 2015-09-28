@@ -128,7 +128,7 @@ static void parse_SYMM_main(B& in, Solver& S) {
             cnt++;
             //printf("Parsing perm\r\n");
             readGenerator(in, &perm);
-            S.addSymmetryGenerator(perm); }
+            S.addSymmetryGenerator(perm, cnt); }
     }
     free(perm.f);
     free(perm.dom);

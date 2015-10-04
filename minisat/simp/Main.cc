@@ -111,12 +111,12 @@ int main(int argc, char** argv)
 
         double symmetry_parsed_time = cpuTime();
         if (symmetry != NULL) {
-          gzFile symm_in = gzopen(symmetry, "rb");
-          parse_SYMM(symm_in, S);
-          gzclose(symm_in);
           // Treat the symetries
           if (symm_eq_aux || symm_dynamic)
             S.initVarEqs();
+          gzFile symm_in = gzopen(symmetry, "rb");
+          parse_SYMM(symm_in, S);
+          gzclose(symm_in);
           //Initialising watched eqs
           if(symm_dynamic)
             {

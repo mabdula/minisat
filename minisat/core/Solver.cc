@@ -1478,7 +1478,7 @@ void Solver::addEq(long int l1, long int l2)
         newEq -> v = abs(l1);
         newEq -> l = abs(l2);
         // printf("Added eqs: %d\n", NumEqs);
-        // printf("Adding %d -> %d\n", l1, l2);
+        // printf("Adding %ld -> %ld\n", l1, l2);
         // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
         int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
         if(eq_idx >= 0)
@@ -1591,6 +1591,7 @@ void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int
         ((Minisat::Eq**)(currentEq->pred))[permIdx] = prevEq;
         prevEq = currentEq;
       }
+
     //testing whether the watched eqs were initialised correctly
     for(int i = 0 ; i < this-> nVars() ; i++)
       {

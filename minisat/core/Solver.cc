@@ -1205,8 +1205,6 @@ void Solver::printSBPStats()
             untouchedSBP++;
           if(!ca[clauses[i]].getResAnal())
             unResAnalSBP++;
-          else
-            
           // if(ca[clauses[i]].firstPropagation <  minSBPFirstPropagation)
           //   minSBPFirstPropagation = ca[clauses[i]].firstPropagation;
           // avgSBPFirstPropagation += ca[clauses[i]].firstPropagation;
@@ -1478,7 +1476,7 @@ void Solver::addEq(long int l1, long int l2)
         newEq -> v = abs(l1);
         newEq -> l = abs(l2);
         // printf("Added eqs: %d\n", NumEqs);
-        // printf("Adding %ld -> %ld\n", l1, l2);
+        // printf("Adding %ld -> %ld\n", newEq -> v, newEq -> l);
         // printf("Size of eqs = %d\n", paSize(this->eqs[newEq -> v]));
         int eq_idx = paContains(this->eqs[newEq -> v], eqCmp, (void*) newEq);
         if(eq_idx >= 0)

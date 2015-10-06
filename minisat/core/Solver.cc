@@ -509,6 +509,7 @@ void Solver::analyzeFinal(Lit p, LSet& out_conflict)
 
 void Solver::uncheckedEnqueue(Lit p, CRef from)
 {
+    // TODO: assignement happens here 2
     assert(value(p) == l_Undef);
     assigns[var(p)] = lbool(!sign(p));
     vardata[var(p)] = mkVarData(from, decisionLevel());
@@ -815,7 +816,7 @@ lbool Solver::search(int nof_conflicts)
                     // Model found:
                     return l_True;
             }
-            //TODO: assignement happens here
+            //TODO: assignement happens here 1
 
             // Increase decision level and enqueue 'next'
             newDecisionLevel();
@@ -1426,17 +1427,17 @@ void Solver::addEq(long int l1, long int l2)
     newEq -> added = 0;
     newEq -> defAdded = 0;
     if(symm_dynamic){
-      newEq -> succ = malloc(sizeof(Minisat::Eq) * this->nSymmetries);
+      newEq -> succ = malloc(sizeof(Minisat::Eq*) * this->nSymmetries);
       unsigned int i = 0;
       for(i = 0 ; i < this-> nSymmetries ; i++)
-        newEq -> succ = NULL; }
+	((Minisat::Eq**)(newEq -> succ)) [i]= NULL; }
     else
       newEq -> succ = NULL;
     if(symm_dynamic){
-      newEq -> pred = malloc(sizeof(Minisat::Eq) * this->nSymmetries);
+      newEq -> pred = malloc(sizeof(Minisat::Eq*) * this->nSymmetries);
       unsigned int i = 0;
       for(i = 0 ; i < this-> nSymmetries ; i++)
-        newEq -> pred = NULL; }
+        ((Minisat::Eq**) (newEq -> pred))[i] = NULL; }
     else
       newEq -> pred = NULL;
     if(l1 < 0 && l2 > 0)
@@ -1555,16 +1556,16 @@ void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int
     prevEq -> defAdded = 0;
     prevEq -> succ = NULL;
     prevEq -> pred = NULL;
-    prevEq -> v = support[i] - 1;
-    prevEq -> l = perm[support[i] - 1] - 1;
-    int eq_idx = paContains(this->eqs[prevEq -> v], eqCmp, (void*) prevEq);
+    prevEq -> v = support[i];
+    prevEq -> l = perm[support[i]];
+    int eq_idx = paContains(this->eqs[support[i]], eqCmp, (void*) prevEq);
     if (eq_idx < 0)
       {
-        printf("Problem with eq table, exiting!!\n");
+        printf("Problem with eq table: %d -> %d is not registered, exiting!!\n", prevEq -> v, prevEq -> l);
         exit(-1);
-     }
+      }
     free(prevEq);
-    prevEq = (Minisat::Eq*)paElementAt(this->eqs[prevEq -> v], eq_idx);
+    prevEq = (Minisat::Eq*)paElementAt(this->eqs[support[i]], eq_idx);
     this->watchedEqs[prevEq -> v][permIdx] = prevEq;
     this->watchedEqs[abs(prevEq -> l)][permIdx] = prevEq;
     Minisat::Eq* currentEq = NULL;
@@ -1573,33 +1574,37 @@ void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int
         currentEq = (Minisat::Eq*)malloc(sizeof(Eq));
         currentEq -> added = 0;
         currentEq -> defAdded = 0;
-        currentEq -> succ = NULL;
-        currentEq -> pred = NULL;
-        currentEq -> v = support[i] - 1;
-        currentEq -> l = perm[support[i] - 1] - 1;
-        int eq_idx = paContains(this->eqs[currentEq -> v], eqCmp, (void*) currentEq);
+        // currentEq -> succ = NULL;
+        // currentEq -> pred = NULL;
+        currentEq -> v = support[i];
+        currentEq -> l = perm[support[i]];
+        int eq_idx = paContains(this->eqs[support[i]], eqCmp, (void*) currentEq);
         if (eq_idx < 0)
           {
             printf("Problem with eq table, exiting!!\n");
             exit(-1);
           }
         free(currentEq);
-        currentEq = (Minisat::Eq*)paElementAt(this->eqs[currentEq -> v], eq_idx);
+        currentEq = (Minisat::Eq*)paElementAt(this->eqs[support[i]], eq_idx);
         ((Minisat::Eq**)(prevEq->succ))[permIdx] = currentEq;
         ((Minisat::Eq**)(currentEq->pred))[permIdx] = prevEq;
         prevEq = currentEq;
       }
 
     //testing whether the watched eqs were initialised correctly
-    for(int i = 0 ; i < this-> nVars() ; i++)
-      {
-        printf("%d watches %d->%d", i, (int)this->watchedEqs[i][permIdx]->v, (int)this->watchedEqs[i][permIdx]->l);
-      }
+    for(int i = 1 ; i <= this->orig_vars ; i++){
+      printf("i = %d ", i);
+      fflush(stdout);
+      printf("this->watchedEqs[i][permIdx] = %d\n", this->watchedEqs[i][permIdx]);
+      if(this->watchedEqs[i][permIdx] != NULL)
+        printf("%d watches %d->%d\n", i, (int)this->watchedEqs[i][permIdx]->v, (int)this->watchedEqs[i][permIdx]->l);
+    }
     
     //printf("Added chaining SBP clauses\n");
   }
 
 bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx) {
+  printf("permIdx = %d\n", permIdx);
   if(symm_eq_aux || symm_dynamic)
     this->constructEqTable(perm.f, perm.dom, perm.domSize);
   if(symm_dynamic && symm_break_shatter)

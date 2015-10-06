@@ -117,16 +117,6 @@ int main(int argc, char** argv)
           gzFile symm_in = gzopen(symmetry, "rb");
           parse_SYMM(symm_in, S);
           gzclose(symm_in);
-          //Initialising watched eqs
-          if(symm_dynamic)
-            {
-              S.watchedEqs = (Eq***)malloc(sizeof(void*) * S.nVars());
-              int i = 0 ; 
-              for(i = 0 ; i < S.nVars() ; i++)
-                {
-                  S.watchedEqs[i] = (Eq**)malloc(sizeof(Eq) * S.nSymmetries);
-                }        
-            }
           printf("|  Number of symmetries:%12d                                          |\n", S.nSymmetries);
           if (S.verbosity > 0){
             printf("|  #variables after SBPs:%12d                                         |\n", S.nVars());

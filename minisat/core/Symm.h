@@ -115,6 +115,20 @@ static void parse_SYMM_main(B& in, Solver& S) {
     //printf("Starting to parse perm\r\n");
     /* Permutation* perm2 = new Permutation; */
     S.nSymmetries = parseInt(in);
+    //Initialising watched eqs
+    //if(symm_dynamic)
+      {
+        S.watchedEqs = (Eq***)malloc(sizeof(void*) * (S.nVars() + 1));
+        int i = 0 ; 
+        for(i = 1 ; i <= S.nVars() ; i++)
+          {
+            S.watchedEqs[i] = (Eq**)malloc(sizeof(Eq) * S.nSymmetries);
+            for(int j = 0 ; j < S.nSymmetries ; j++)
+              {  
+                S.watchedEqs[i][j] = NULL;
+              }
+          }        
+      }
     Permutation perm;
     perm.f = (int*)malloc(sizeof(int) * (S.nVars() + 1));
     perm.domSize = 0;
@@ -126,10 +140,10 @@ static void parse_SYMM_main(B& in, Solver& S) {
         else if (*in == 'c'){
             skipLine(in);
         } else{
-            cnt++;
             //printf("Parsing perm\r\n");
             readGenerator(in, &perm);
-            S.addSymmetryGenerator(perm, cnt); }
+            S.addSymmetryGenerator(perm, cnt);
+            cnt++;}
     }
     free(perm.f);
     free(perm.dom);

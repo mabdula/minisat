@@ -72,7 +72,7 @@ static void parse_DIMACS_main(B& in, Solver& S, bool strictp = false) {
     }
     if (strictp && cnt != clauses)
         printf("PARSE ERROR! DIMACS header mismatch: wrong number of clauses\n");
-
+    S.orig_vars = vars;
     // Compiler warnings
     (void)vars;
     (void)clauses;

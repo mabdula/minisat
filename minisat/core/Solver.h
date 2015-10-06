@@ -52,6 +52,7 @@ public:
 
     // Problem specification:
     //
+    Var                 orig_vars;        // Number of variables before adding symm breaking variables
     Var     newVar    (lbool upol = l_Undef, bool dvar = true); // Add a new variable with parameters specifying variable mode.
     void    releaseVar(Lit l);                                  // Make literal true and promise to never refer to variable again.
 

@@ -171,7 +171,8 @@ void Solver::releaseVar(Lit l)
 
 bool Solver::addClause_(vec<Lit>& ps, bool SBP)
 {
-    assert(decisionLevel() == 0);
+    if(!SBP)
+      assert(decisionLevel() == 0);
     if (!ok) return false;
 
     // Check if clause is satisfied and remove false/duplicate literals:
@@ -515,11 +516,11 @@ void Solver::uncheckedEnqueue(Lit p, CRef from)
     trail.push_(p);
     for(unsigned int permIdx = 0 ; permIdx < this->nSymmetries ; permIdx++)
       {
-        printf("var(p)=%d\n",var(p));
+        //printf("var(p)=%d\n",var(p) + 1);
         if(var(p) < this->orig_vars)
-          if(watchedEqs[var(p)][permIdx] != NULL)
-            if(predSat(watchedEqs[var(p)][permIdx], permIdx))
-              printf("Eq satisfied\n"), addSucc(watchedEqs[var(p)][permIdx], permIdx);
+          if(watchedEqs[var(p) + 1][permIdx] != NULL)
+            if(predSat(watchedEqs[var(p) + 1][permIdx], permIdx))
+              /*printf("Eq satisfied\n"),*/ addSucc(watchedEqs[var(p) + 1][permIdx], permIdx);
       }
 }
 
@@ -1323,7 +1324,7 @@ void Solver::addAllShatterSBPs(int* perm, unsigned int* support, unsigned int ns
     int p0 = this->addInitShatterSBP(support[0], perm[support[0]]);
     //printf("Adding shatter SBP clauses\n");
     unsigned int i = 0 ;
-    int currentP = p0;
+    currentP = p0;
     for (i = 1; i < nsupport; ++i)
       {
         int nextP = this->addShatterSBP(support[i-1], perm[support[i-1]], support[i], perm[support[i]], currentP);
@@ -1390,8 +1391,7 @@ void Solver::addAllChainingSBPs(int* perm, unsigned int* support, unsigned int n
     //printf("Adding chaining SBP clauses\n");
     unsigned int i = 0 ;
     int p0 = addInitChainingSBP(support[0], perm[support[0]]);
-    int currentP = p0;
-
+    currentP = p0;
     for (i = 1; i < nsupport; ++i)
       {
         currentP = addChainingSBP(support[i], perm[support[i]], currentP);
@@ -1611,7 +1611,7 @@ void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int
   }
 
 bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permIdx) {
-  printf("permIdx = %d\n", permIdx);
+  //printf("permIdx = %d\n", permIdx);
   if(symm_eq_aux || symm_dynamic)
     this->constructEqTable(perm.f, perm.dom, perm.domSize);
   if(symm_dynamic && symm_break_shatter)
@@ -1647,4 +1647,10 @@ bool Solver::predSat(Minisat::Eq* eq, int permIdx)
 bool Solver::addSucc(Minisat::Eq* eq, int permIdx)
   {
     
+    if(!eq->added)
+      {
+        printf("adding SBP for %d -> %d\n", eq->v, eq->l);
+        currentP = addChainingSBP(eq->v, eq->l, currentP);
+      }
+    eq->added = 1;
   }

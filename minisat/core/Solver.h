@@ -88,10 +88,10 @@ public:
     unsigned int addEqAuxVars(unsigned int v, int l);
     unsigned int nSymmetries;
     Permutation* symmetries;
-    int currentP; // The last added symmetry auxilliary variable
     void initEqWatchStructure(int* perm, unsigned int* support, unsigned int nsupport, unsigned int permIdx);
     bool predSat(Minisat::Eq* eq, int permIdx);
     bool addSucc(Minisat::Eq* eq, int permIdx);
+    int currentP; // The ID of the current symm breaking auxilliary variable
     // Solving:
     //
     bool    simplify     ();                        // Removes already satisfied clauses.

@@ -114,9 +114,8 @@ Solver::Solver() :
 Solver::~Solver()
 {
   if(symm_dynamic){
-    free(watchedEqs);
     int i = 0 ; 
-    for(i = 0 ; i < this->nVars() ; i++){
+    for(i = 1 ; i < this->orig_vars ; i++){
       free(this->watchedEqs[i]);
     }        
   free(this->watchedEqs);
@@ -509,11 +508,19 @@ void Solver::analyzeFinal(Lit p, LSet& out_conflict)
 
 void Solver::uncheckedEnqueue(Lit p, CRef from)
 {
-    // TODO: assignement happens here 2
+    // TODO: assignement happens here
     assert(value(p) == l_Undef);
     assigns[var(p)] = lbool(!sign(p));
     vardata[var(p)] = mkVarData(from, decisionLevel());
     trail.push_(p);
+    for(unsigned int permIdx = 0 ; permIdx < this->nSymmetries ; permIdx++)
+      {
+        printf("var(p)=%d\n",var(p));
+        if(var(p) < this->orig_vars)
+          if(watchedEqs[var(p)][permIdx] != NULL)
+            if(predSat(watchedEqs[var(p)][permIdx], permIdx))
+              printf("Eq satisfied\n"), addSucc(watchedEqs[var(p)][permIdx], permIdx);
+      }
 }
 
 
@@ -1592,13 +1599,13 @@ void Solver::initEqWatchStructure(int* perm, unsigned int* support, unsigned int
       }
 
     //testing whether the watched eqs were initialised correctly
-    for(int i = 1 ; i <= this->orig_vars ; i++){
-      printf("i = %d ", i);
-      fflush(stdout);
-      printf("this->watchedEqs[i][permIdx] = %d\n", this->watchedEqs[i][permIdx]);
-      if(this->watchedEqs[i][permIdx] != NULL)
-        printf("%d watches %d->%d\n", i, (int)this->watchedEqs[i][permIdx]->v, (int)this->watchedEqs[i][permIdx]->l);
-    }
+    // for(int i = 1 ; i <= this->orig_vars ; i++){
+    //   printf("i = %d ", i);
+    //   fflush(stdout);
+    //   printf("this->watchedEqs[i][permIdx] = %d\n", this->watchedEqs[i][permIdx]);
+    //   if(this->watchedEqs[i][permIdx] != NULL)
+    //     printf("%d watches %d->%d\n", i, (int)this->watchedEqs[i][permIdx]->v, (int)this->watchedEqs[i][permIdx]->l);
+    // }
     
     //printf("Added chaining SBP clauses\n");
   }
@@ -1625,3 +1632,19 @@ bool Solver::addSymmetryGenerator(Minisat::Permutation& perm, unsigned int permI
     addAllChainingSBPs(perm.f, perm.dom, perm.domSize);
   return ok;
 }
+
+bool Solver::predSat(Minisat::Eq* eq, int permIdx)
+  {
+    if(value(eq->v) == value(eq->l))
+      if(((Minisat::Eq**) eq->pred)[permIdx] == NULL)
+        return 1;
+      else
+        return predSat(((Minisat::Eq**)eq->pred)[permIdx], permIdx);
+    else
+      watchedEqs[eq->v][permIdx] = eq, watchedEqs[abs(eq->l)][permIdx] = eq;
+  }
+
+bool Solver::addSucc(Minisat::Eq* eq, int permIdx)
+  {
+    
+  }

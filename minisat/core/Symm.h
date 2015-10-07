@@ -164,6 +164,7 @@ inline int eqCmp(void* eq1, void* eq2)
     return (((Minisat::Eq*)eq1)->v == ((Minisat::Eq*)eq2)->v && ((Minisat::Eq*)eq1)->l == ((Minisat::Eq*)eq2)->l );
   }
 
+
 //=================================================================================================
 
 #endif

@@ -90,6 +90,8 @@ public:
     Permutation* symmetries;
     int currentP; // The last added symmetry auxilliary variable
     void initEqWatchStructure(int* perm, unsigned int* support, unsigned int nsupport, unsigned int permIdx);
+    bool predSat(Minisat::Eq* eq, int permIdx);
+    bool addSucc(Minisat::Eq* eq, int permIdx);
     // Solving:
     //
     bool    simplify     ();                        // Removes already satisfied clauses.
